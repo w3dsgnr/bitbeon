@@ -1441,12 +1441,12 @@ body {
 
 /* content column matches .crypto-hl__row above: 1400px centered inside the
    20px page gutters (the frame inset IS that gutter, so no inline padding);
-   360px top/bottom inside the dark frame (owner request 2026-07-10) */
+   240px top/bottom inside the dark frame (owner request 2026-07-16) */
 .security__content {
   position: relative;
   max-width: 1400px;
   margin-inline: auto;
-  padding: 360px 0;
+  padding: 240px 0;
 }
 
 /* H2 white, left; sub white 80% (per the dark mock) */
@@ -3372,7 +3372,7 @@ body {
   }
 
   .security__content {
-    padding: 160px 20px;
+    padding: 80px 20px;
   }
 
   /* cards stack full-width, Trust-style: shortened tile with the mock-UI

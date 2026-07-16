@@ -129,18 +129,31 @@ export default function Security() {
         root.querySelectorAll(".security__card")
       );
 
+      // The header is FIXED near the viewport top (84px desktop / 16px
+      // mobile), so the theme must flip when the dark frame's edge crosses
+      // the header's own midline — not when the section merely enters the
+      // viewport. offsetHeight (not rect) because Hero slides the header on
+      // the transform channel.
+      const headerMid = () => {
+        const el = document.querySelector<HTMLElement>(".freedom-header");
+        if (!el) return 0;
+        return parseFloat(getComputedStyle(el).top) + el.offsetHeight / 2;
+      };
+      const makeThemeTrigger = () =>
+        ScrollTrigger.create({
+          trigger: frame,
+          start: () => `top ${headerMid()}px`,
+          end: () => `bottom ${headerMid()}px`,
+          refreshPriority: -2,
+          onToggle: (self) => setHeaderTheme(self.isActive ? "dark" : "light"),
+        });
+
       if (reduced) {
         // static dark state, everything visible; keep the header-theme
         // trigger (color STATE, not motion)
         gsap.set(frame, { backgroundColor: "#000" });
         gsap.set([h2, sub, ...cards], { autoAlpha: 1, y: 0 });
-        const themeTrigger = ScrollTrigger.create({
-          trigger: root,
-          start: "top 60%",
-          end: "bottom top",
-          refreshPriority: -2,
-          onToggle: (self) => setHeaderTheme(self.isActive ? "dark" : "light"),
-        });
+        const themeTrigger = makeThemeTrigger();
         return () => themeTrigger.kill();
       }
 
@@ -152,9 +165,14 @@ export default function Security() {
       const start = () => {
         if (cancelled || !rootRef.current) return;
 
-        // ---- 1. bg light->black + header theme (spec §4.1 + §4.4, one
-        // trigger). onToggle covers all four crossings, so the header goes
-        // light again both above AND below the section, both directions.
+        // ---- 1a. header theme (spec §4.4) — its own trigger, pinned to the
+        // frame edges crossing the header midline. onToggle covers all four
+        // crossings, so the header goes light again both above AND below the
+        // section, both directions.
+        triggers.push(makeThemeTrigger());
+
+        // ---- 1b. bg light->black (spec §4.1) — fades as the section
+        // enters the viewport, well before the header reaches the frame.
         triggers.push(
           ScrollTrigger.create({
             trigger: root,
@@ -163,8 +181,6 @@ export default function Security() {
             // -2: measured only after all act pins above re-apply their
             // spacers, else start lands ~a pin-length early
             refreshPriority: -2,
-            onToggle: (self) =>
-              setHeaderTheme(self.isActive ? "dark" : "light"),
             onEnter: () =>
               gsap.to(frame, {
                 backgroundColor: "#000000",
