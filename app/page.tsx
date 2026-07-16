@@ -11,10 +11,14 @@ import GetStarted from "@/components/GetStarted";
 import Faq from "@/components/Faq";
 import Footer from "@/components/Footer";
 import CookieConsent from "@/components/CookieConsent";
+import ScrollMemory from "@/components/ScrollMemory";
 
 export default function Home() {
   return (
     <>
+      {/* back/forward navs: re-apply the saved scroll once pins rebuild the
+          page height — see ScrollMemory.tsx for the why */}
+      <ScrollMemory />
       {/* keyboard users can jump the fixed header + scroll narrative */}
       <a className="skip-link" href="#main">
         Skip to content
