@@ -375,7 +375,7 @@ export default function Act3() {
   );
 
   return (
-    <section ref={rootRef} className="act3">
+    <section ref={rootRef} className="act3" id="currencies">
       <div className="act3-grid">
         {[CARDS.slice(0, 2), CARDS.slice(2)].map((pair, ci) => (
           <div

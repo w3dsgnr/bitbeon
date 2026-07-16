@@ -28,6 +28,7 @@ import Link from "next/link";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
+import { setHeaderHidden } from "@/lib/headerTheme";
 
 /* WebGL stays out of the initial bundle; mounted only near the viewport */
 const PixelBlast = dynamic(() => import("./PixelBlast"), { ssr: false });
@@ -39,9 +40,9 @@ const PRODUCT_LINKS: Array<[string, string]> = [
   ["Features", "#features"],
   ["Virtual Card", "#card"],
   ["Crypto", "#crypto"],
-  ["Currencies", "#"], // TODO: no #currencies anchor exists yet
   ["Security", "#security"],
   ["Get started", "#start"],
+  ["FAQ", "#faq"],
 ];
 
 const LEGAL_LINKS: Array<[string, string]> = [
@@ -102,9 +103,22 @@ export default function Footer() {
       const panel = root.querySelector<HTMLElement>(".footer__panel")!;
       const logo = root.querySelector<HTMLElement>(".footer__logo")!;
 
+      /* hide the fixed header while the footer is on stage — a state toggle
+         like the theme switch (not scrub), so it runs for reduced motion too
+         (instant swap there, no slide) */
+      const hideHeader = ScrollTrigger.create({
+        trigger: panel,
+        start: "top 40%",
+        refreshPriority: -3,
+        onToggle: (self) => setHeaderHidden(self.isActive, reduced),
+      });
+
       if (reduced) {
         gsap.set([panel, logo], { autoAlpha: 1 });
-        return; // no marquee, no reveal motion
+        return () => {
+          hideHeader.kill();
+          setHeaderHidden(false, true);
+        }; // no marquee, no reveal motion
       }
 
       let cancelled = false;
@@ -174,6 +188,8 @@ export default function Footer() {
         revealTl?.scrollTrigger?.kill();
         revealTl?.kill();
         triggers.forEach((t) => t.kill());
+        hideHeader.kill();
+        setHeaderHidden(false, true);
       };
     },
     { dependencies: [reduced], scope: rootRef }

@@ -943,6 +943,7 @@ body {
 .site-header__nav a {
   /* constant padding — the hover fill must never resize the pill */
   padding: 8px 12px;
+  white-space: nowrap; /* "Virtual Card" must not wrap when the row tightens */
   border-radius: 20px;
   font-family: var(--font-sans);
   font-size: 14px;

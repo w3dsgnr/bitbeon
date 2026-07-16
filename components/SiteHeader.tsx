@@ -46,11 +46,14 @@ export default function SiteHeader() {
         <span className="site-header__mark" aria-hidden="true" />
         <span className="site-header__wordmark">BitBeon</span>
       </a>
+      {/* section list mirrors the footer's Product column (minus Get started,
+          which is the CTA button) */}
       <nav className="site-header__nav" aria-label="Primary">
         <a href="#features">Features</a>
-        <a href="#card">Card</a>
+        <a href="#card">Virtual Card</a>
         <a href="#crypto">Crypto</a>
         <a href="#security">Security</a>
+        <a href="#faq">FAQ</a>
       </nav>
       <a className="site-header__cta" href="#start">
         Get started
@@ -73,13 +76,16 @@ export default function SiteHeader() {
           Features
         </a>
         <a href="#card" onClick={closeMenu}>
-          Card
+          Virtual Card
         </a>
         <a href="#crypto" onClick={closeMenu}>
           Crypto
         </a>
         <a href="#security" onClick={closeMenu}>
           Security
+        </a>
+        <a href="#faq" onClick={closeMenu}>
+          FAQ
         </a>
       </nav>
     </header>
