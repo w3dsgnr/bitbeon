@@ -1,26 +1,3669 @@
-@import "tailwindcss";
+﻿@import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* BitBeon tokens (ref: PROTOTYPE.md В§5) */
+  --bit-scene: #000208;   /* hero intro scene */
+  --bit-blue: #000dff;    /* rays / glow */
+  --bit-white: #ffffff;   /* handoff background (lies behind the sequence) */
+  --bit-ink: #101010;     /* headline ink on white */
+  --bit-frame: #f4f4f4;   /* act-1 framed-scene base (60px inset + page bg) */
+  --act2-bg: #f4f4f4;     /* act-2 bento scene base — same as acts 3/4 */
+  --act2-card-ink: #141414; /* act-2/3/4 card + resting-title typography (ref: Figma) */
+  --card-bg-a: #edf3fe;   /* bento card — lavender */
+  --card-bg-b: #efefef;   /* bento card — grey */
+  /* bento height = the phone shot's rendered height — the card columns must
+     sum EXACTLY to the png (310x674 phones), not stretch to the viewport */
+  /* 280px of breathing keeps a ≥140px top gap — the fixed header (~88px)
+     always sits fully on the light stage bg, clear of the phone/cards */
+  --bento-h: min(674px, calc(100svh - 280px));
+  --act3-bg: #f4f4f4;     /* act-3 base — echoes the act-1 finale frame */
+  --act4-bg: #f4f4f4;     /* act-4 base — continues the light bento canvas */
+
+  /* Part B tokens (prompt-part-b-sections.md; Figma 78:2403..78:4709) */
+  --bit-purple: #441FDA;    /* brand mark */
+  --ink-strong: #030303;    /* part-B text ink */
+  --page-light: #ffffff;    /* security pre-dark bg / light section base — must
+                               match --bit-white so part B continues the
+                               crypto-hero/highlights canvas seamlessly */
+  --cta-ink-light: #F6FCFE; /* CTA text on black */
+  --card-grey: #EDEDED;     /* highlight illustration card */
+  --footer-bg: #0A0A0A;
+  /* part-B frame tokens (Figma 78:2422 / 78:3365: 20px inset, 60px radius).
+     Radius is ADAPTIVE: 60px at the 1440 mock, shrinking with the viewport
+     (floor 28px) — same rule family as the hero's frameRadius() in Hero.tsx,
+     so all framed surfaces round consistently on small screens. */
+  --frame-b-inset: 20px;
+  --frame-b-radius: clamp(28px, 4.2vw, 60px);
+
+  --font-display: var(--font-dm-sans), system-ui, sans-serif;
+  --font-sans: var(--font-dm-sans), system-ui, sans-serif;
+  --font-brand: var(--font-dm-sans), system-ui, sans-serif;
+  --font-subtitle: var(--font-inter), system-ui, sans-serif;
+
+  /* display voice — 160px at the 1440 mock width, fluid below it. The acts'
+     GSAP title FLIPs use scale RATIOS (26.105/160), so a smaller rendered
+     size scales proportionally — desktop ≥1440 is pixel-identical to Figma. */
+  /* floor 44px ≈ 11.2vw at 390px — the widest phrases set in this token
+     ("Total freedom", "One wallet", nowrap) must fit a 390px viewport */
+  --display-size: clamp(44px, 11.2vw, 160px);
+  --display-tracking: -0.06em; /* = -9.6px at 160px */
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+html,
+body {
+  height: 100%;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+/* NO css scroll-behavior: smooth here — Lenis owns scrolling (it sets the
+   scroll position programmatically every frame; css-smooth would turn each
+   set into an animation and the scrub would forever lag behind). Anchor
+   links glide via Lenis's own `anchors: true`. */
+
+body {
+  background: var(--bit-white);
+  color: var(--bit-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+::selection {
+  background: var(--bit-purple);
+  color: #fff;
+}
+
+/* keyboard focus — visible on light and dark surfaces alike */
+:focus-visible {
+  outline: 2px solid var(--bit-purple);
+  outline-offset: 3px;
+}
+
+.site-header[data-theme="dark"] :focus-visible,
+.footer__panel :focus-visible,
+.security :focus-visible {
+  outline-color: #fff;
+}
+
+/* hidden until keyboard-focused; sits above the fixed header (z 100) */
+.skip-link {
+  position: fixed;
+  top: 16px;
+  left: 16px;
+  z-index: 200;
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: var(--ink-strong);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 500;
+  text-decoration: none;
+  transform: translateY(calc(-100% - 24px));
+  transition: transform 200ms ease-out;
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+  outline-color: #fff;
+  outline-offset: -4px;
+}
+
+/* headings never orphan a single word; multi-line body copy gets a calm rag */
+.crypto-hero__title,
+.security__title,
+.trust__title,
+.gs__title,
+.faq__title {
+  text-wrap: balance;
+}
+
+.trust__body,
+.security__sub,
+.security__card-caption,
+.crypto-hl__body,
+.gs__step-body,
+.faq__answer-inner p,
+.footer__legal-text p {
+  text-wrap: pretty;
+}
+
+/* React Bits LightRays container вЂ” override stock z-index:3 so it sits as a
+   full-bleed BACKGROUND behind the hero content. */
+.light-rays-container {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* ---------- Hero ---------- */
+.hero-root {
+  position: relative;
+  width: 100%;
+}
+
+.hero-stage {
+  position: relative;
+  width: 100%;
+  height: 100svh; /* small-viewport unit: stable under mobile browser chrome,
+                     and static per-load so ScrollTrigger pins measure once */
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+  background: var(--bit-white);
+}
+
+/* dark intro scene; fades out (opacity) to reveal the white base, then unmounts rays */
+.hero-dark {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: var(--bit-scene);
+}
+
+/* oversized backdrop wordmark behind the intro logo — 200px, fill #fff 16% */
+.hero-intro-wordmark {
+  position: absolute;
+  inset: 0;
+  z-index: 0; /* above the rays canvas (DOM order), below the logo (z 1) */
+  display: grid;
+  place-items: center;
+  margin: 0;
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 14;
+  font-size: clamp(64px, 13.9vw, 200px); /* 200px at the 1440 design width */
+  font-weight: 700;
+  letter-spacing: var(--display-tracking);
+  line-height: normal;
+  white-space: nowrap;
+  color: rgba(255, 255, 255, 0.16);
+  pointer-events: none;
+  user-select: none;
+}
+
+/* centered intro brand mark — layout centers it (inset + margin auto) so GSAP
+   owns the transforms exclusively: cursor parallax on the wrap, float on the img */
+.hero-intro-logo {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  z-index: 1; /* above the LightRays canvas */
+  width: clamp(150px, 24vmin, 240px);
+  height: clamp(150px, 24vmin, 240px);
+  pointer-events: none;
+  will-change: transform;
+}
+
+.hero-intro-logo img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  will-change: transform;
+  /* ambient glow matching the rays color (#000DFF) */
+  filter: drop-shadow(0 24px 48px rgba(0, 13, 255, 0.35));
+}
+
+.hero-seq-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.hero-seq-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* h0 вЂ” display heading token; same typography as the freedom phrases
+   (160/700, -9.6px, opsz 14) вЂ” only colors differ per scene */
+.h0 {
+  color: #ffffff;
+  text-align: center;
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 14;
+  font-size: var(--display-size);
+  font-style: normal;
+  font-weight: 700;
+  letter-spacing: var(--display-tracking);
+  line-height: normal;
+}
+
+/* headline sitting on a light background (coin-seq frames are on white) вЂ” ink, not white */
+.headline-on-light {
+  color: var(--bit-ink);
+}
+
+.hero-headline {
+  position: absolute;
+  z-index: 2;
+  margin: 0;
+  letter-spacing: 0;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.scroll-down {
+  position: absolute;
+  bottom: calc(clamp(24px, 5vh, 48px) + 20px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  letter-spacing: normal;
+  /* 60% via color alpha — GSAP owns the element's opacity (autoAlpha fade) */
+  color: rgba(255, 255, 255, 0.6);
+  pointer-events: none;
+  /* gentle downward bob — invites the scroll and shows its direction.
+     Keyframes carry the centering translateX so the transform channel
+     stays whole; GSAP never touches this element's transform. */
+  animation: scroll-cue-float 2.2s ease-in-out infinite;
+}
+
+@keyframes scroll-cue-float {
+  0%,
+  100% {
+    transform: translateX(-50%) translateY(0);
+  }
+  50% {
+    transform: translateX(-50%) translateY(8px);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* prefers-reduced-motion: hide the scroll cue (no scroll narrative to run). */
+@media (prefers-reduced-motion: reduce) {
+  .scroll-down {
+    display: none;
+  }
 }
+
+/* ---------- ACT 2 — "Everything in one balance" -> bento ----------
+   Defaults are the PRE-scene hidden state (SSR-safe); GSAP owns the reveal.
+   The grid is ALWAYS in its final layout — only transform/opacity animate. */
+.act2 {
+  position: relative;
+  width: 100%;
+  height: 100svh; /* small-viewport unit: stable under mobile browser chrome,
+                     and static per-load so ScrollTrigger pins measure once */
+  overflow: hidden;
+  background: var(--act2-bg);
+}
+
+/* final bento (ref: Figma 71:2266 / 71:4670 / 71:4865) — four EQUAL cards
+   (387x327), two per column, phone center. Proportions from the 1440 mock:
+   columns 387/310/387, row gap 15, column gap 20.
+   Centered via auto margins (NOT transform — the FLIP measure walks offset*
+   metrics, which ignore transforms). */
+.act2-grid {
+  position: absolute;
+  /* vertically aligned with the shot (which is viewport-centered) — NOT a
+     transform: the FLIP measure walks offset* metrics */
+  top: calc(50% - var(--bento-h) / 2);
+  height: var(--bento-h);
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: min(1124px, calc(100% - 72px));
+  display: grid;
+  grid-template-columns: 387fr 310fr 387fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 15px 20px;
+  z-index: 1;
+}
+
+/* side columns are flex wrappers (hover expand/collapse mechanic below);
+   the internal 15px gap mirrors the grid's row gap, and two flex 1 1 0
+   cards reproduce the old 2-row placement pixel-for-pixel at rest */
+.bento-col {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  min-height: 0;
+}
+
+.bento-col--left { grid-area: 1 / 1 / 3 / 2; }
+.bento-col--right { grid-area: 1 / 3 / 3 / 4; }
+.card-center { grid-area: 1 / 2 / 3 / 3; }
+
+/* bento card palette (ref: Figma 50:2095 / 50:2044 / 50:1981) — light cards
+   share one grey→white gradient (set on .actN-card); ONE navy card per act */
+.act2-grid .card-tr,
+.act3-grid .card-bl,
+.act4-grid .card-br {
+  background: linear-gradient(180deg, #1c2158 0%, #3c47be 100%);
+  color: #f6fcfe;
+}
+
+.act2-grid .card-tr .bento-card__sub,
+.act3-grid .card-bl .bento-card__sub,
+.act4-grid .card-br .bento-card__sub {
+  color: rgba(246, 252, 254, 0.65);
+}
+
+.act2-card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  overflow: hidden;
+  padding: 32px;
+  border-radius: 30px;
+  background: linear-gradient(180deg, #efefef 0%, #fff 49.84%);
+  color: var(--act2-card-ink);
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 14;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.3;
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* ---- bento card hover mechanic (acts 2/3/4) — pure CSS, no JS/GSAP ----
+   Card = flex item in its .bento-col. Title and sub flow from the top; the
+   illustration is absolutely positioned, so a shrinking card clips IT
+   (overflow: hidden), never the text. Hover: the card grows, its sub fades
+   in; the column neighbor collapses to title + 32px padding-block and its
+   illustration/sub fade out. Column height never changes. */
+.bento-card {
+  flex: 1 1 0;
+  min-height: 0;
+  flex-direction: column; /* title over sub (.actN-card sets display:flex) */
+}
+
+.bento-card__title {
+  margin: 0;
+  font-weight: 600;
+}
+
+/* DM Sans Regular 18 — hidden at rest, revealed on the hovered card */
+.bento-card__sub {
+  margin: 12px 0 0;
+  max-height: 200px; /* transition hook: collapses to 0 on the neighbor */
+  font-family: var(--font-sans);
+  font-variation-settings: "opsz" 14;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.4;
+  color: rgba(0, 0, 0, 0.55);
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+/* the whole mechanic is hover-only — touch gets the static bento; ≥769px
+   only: below that the acts are static stacked sections with every card
+   already expanded (see the acts ≤768 block at the end of this file) */
+@media (hover: hover) and (pointer: fine) and (min-width: 769px) {
+  .bento-card {
+    transition: flex-grow 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      padding 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .bento-card__sub {
+    transition: opacity 0.3s ease-out 0.12s, transform 0.3s ease-out 0.12s,
+      max-height 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      margin-top 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .bento-card .card-illo {
+    transition: opacity 0.25s ease-out 0.1s;
+  }
+
+  /* the column neighbor collapses to title + 32px padding-block */
+  .bento-col:has(.bento-card--top:hover) .bento-card--bottom,
+  .bento-col:has(.bento-card--bottom:hover) .bento-card--top {
+    flex-grow: 0.0001; /* not 0 — flex-grow must stay transitionable */
+    flex-basis: auto; /* shrink toward the intrinsic title height */
+    padding-block: 32px; /* padding-inline untouched — no title reflow */
+  }
+
+  /* the collapsed neighbor's illustration and sub go dark; the sub also
+     gives up its flow height, so the intrinsic height = title + padding */
+  .bento-col:has(.bento-card--top:hover)
+    .bento-card--bottom
+    :is(.card-illo, .bento-card__sub),
+  .bento-col:has(.bento-card--bottom:hover)
+    .bento-card--top
+    :is(.card-illo, .bento-card__sub) {
+    opacity: 0;
+    transition: opacity 0.2s ease-out;
+  }
+
+  .bento-col:has(.bento-card--top:hover) .bento-card--bottom .bento-card__sub,
+  .bento-col:has(.bento-card--bottom:hover) .bento-card--top .bento-card__sub {
+    max-height: 0;
+    margin-top: 0;
+    transition: opacity 0.2s ease-out,
+      max-height 0.45s cubic-bezier(0.22, 1, 0.36, 1),
+      margin-top 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* the hovered card reveals its sub */
+  .bento-card:hover .bento-card__sub {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* card screenshots — shared bento card template (acts 2/3/4). Every render
+   (public/cards/*, 2x exports of the Figma 50:2095/50:2044/50:1981 image
+   nodes) is card-width and anchored to the card's BOTTOM edge — the hover
+   expand/collapse changes the card's height from the top, so a bottom anchor
+   keeps each render glued in place while a collapsing card clips it. */
+.card-illo {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: auto;
+  /* cards run shorter than the 387x327 mock on small viewports (--bento-h)
+     while the render scales with card WIDTH — clamp it below the title zone
+     (32px padding + two 24px lines) and crop the render's top, which is
+     empty background in every asset */
+  max-height: calc(100% - 94px);
+  object-fit: cover;
+  object-position: bottom;
+  pointer-events: none;
+}
+
+/* phone screenshot living in the CENTER cell of acts 3/4 — revealed by the
+   same tween that used to draw the center-card outline */
+.center-shot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 38px;
+  display: block;
+}
+
+/* the cell the shot FLIPs into. The shot itself STAYS visible (no fade, no
+   white outline anymore) — this is a transparent geometry anchor only */
+.card-center {
+  position: relative;
+  /* stacking context: keeps the phone frame's z-index -1 (white plate under
+     the screenshot) from sinking below the section background */
+  isolation: isolate;
+}
+
+/* ---- decorative iPhone frame (PhoneFrame.tsx) ----
+   SVG outline tracing the phone contour around the acts-2/3/4 screenshots:
+   body line 7px outside the shot edge + side buttons. Geometry lives in
+   CSS calc() (SVG2 geometry properties, no viewBox) so the contour hugs
+   whatever box the shot renders at; --pf-r = shot corner radius + 7px gap,
+   set per callsite by the component. px constants mirror PhoneFrame.tsx. */
+.phone-frame {
+  position: absolute;
+  inset: -14px; /* = BLEED in PhoneFrame.tsx */
+  width: calc(100% + 28px);
+  height: calc(100% + 28px);
+  overflow: visible;
+  pointer-events: none;
+  /* behind the screenshot img: the body rect is white-filled (it plugs the
+     7px gap between shot edge and contour), so it must paint under the shot.
+     Needs a stacking context on the shot's box — .act2-shot has one via
+     will-change, .card-center via isolation — or -1 would sink below the
+     section background. */
+  z-index: -1;
+}
+
+.phone-frame__body {
+  x: 7px;
+  y: 7px;
+  width: calc(100% - 14px);
+  height: calc(100% - 14px);
+  rx: var(--pf-r);
+  /* white plate: fills the 7px shot->contour gap (and the shot's rounded
+     corners); the screenshot img paints over its center */
+  fill: #fff;
+  stroke: rgba(27, 32, 65, 0.2); /* #1B2041 @ 20% */
+  stroke-width: 3.5px;
+}
+
+/* buttons protrude 3.5px outward from the contour line (outer line edge is
+   1.75px past the 7px centerline — half the stroke) */
+.phone-frame__btn {
+  x: 1.75px;
+  width: 3.5px;
+  rx: 1.75px;
+  fill: rgba(27, 32, 65, 0.2); /* #1B2041 @ 20% */
+}
+
+.phone-frame__btn--right {
+  x: calc(100% - 5.25px);
+}
+
+/* ---- hero overlay (above the grid, FLIPs into the center card) ---- */
+.act2-hero {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.act2-shot {
+  grid-area: 1 / 1;
+  /* matches /main.png's native 310:674 ratio — width derives from height so
+     the phone frame is never cropped by object-fit: cover. Same height as
+     the bento grid: the cards sum exactly to the png. */
+  height: var(--bento-h);
+  width: auto;
+  aspect-ratio: 310 / 674;
+  border-radius: 48px;
+  /* NO overflow: hidden — the iPhone-frame outline overhangs the shot by
+     14px; the corner crop moved to the img's own border-radius */
+  background: linear-gradient(165deg, #f6f5ff 0%, #dcd7f5 60%, #c9c2ee 100%);
+  will-change: transform;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.act2-shot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 48px; /* was the parent's overflow crop */
+  display: block;
+  color: transparent; /* mute alt text while the asset is missing */
+}
+
+/* ---- scroll-riding headline lines (acts 2/4) ----
+   Two independent display lines crossing the pinned scene horizontally at
+   different depths: the BACK line passes behind the hero overlay (phone /
+   holo card, z 2), the FRONT line above it. The layer itself must NOT
+   create a stacking context (no z-index/transform/opacity) — the lines
+   interleave with .actN-hero through their own z-index. */
+.act-title-layer {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  pointer-events: none;
+}
+
+.act-title-line {
+  position: absolute;
+  left: 50%;
+  margin: 0;
+  white-space: nowrap;
+  color: #0a0a0a;
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 14;
+  font-size: var(--display-size);
+  font-weight: 700;
+  letter-spacing: var(--display-tracking);
+  line-height: normal;
+  will-change: transform;
+  /* SSR-safe hidden; GSAP places them off-screen and reveals */
+  opacity: 0;
+  visibility: hidden;
+}
+
+.act-title-line--back {
+  top: 38%;
+  z-index: 1; /* under .actN-hero (2); after the grid in DOM, so above it */
+}
+
+.act-title-line--front {
+  top: 62%;
+  z-index: 3; /* over the hero overlay */
+}
+
+/* act 2: BOTH lines pass behind the phone — text must never cross the
+   iPhone frame outline (act 4 keeps the front line over the holo card) */
+.act2 .act-title-line--front {
+  z-index: 1;
+}
+
+/* ---------- ACT 3 — canvas-sequence hero -> bento ----------
+   Same skeleton as act 2; the hero is the act-1-finale framed window
+   (60px frame in the section bg + radius 80) scrubbing a frame sequence. */
+.act3 {
+  position: relative;
+  width: 100%;
+  height: 100svh; /* small-viewport unit: stable under mobile browser chrome,
+                     and static per-load so ScrollTrigger pins measure once */
+  overflow: hidden;
+  background: var(--act3-bg);
+}
+
+.act3-grid {
+  position: absolute;
+  top: calc(50% - var(--bento-h) / 2);
+  height: var(--bento-h);
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: min(1124px, calc(100% - 72px));
+  display: grid;
+  grid-template-columns: 387fr 310fr 387fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 15px 20px;
+  z-index: 1;
+}
+
+.act3-card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  overflow: hidden;
+  padding: 32px;
+  border-radius: 30px;
+  background: linear-gradient(180deg, #efefef 0%, #fff 49.84%);
+  color: var(--act2-card-ink);
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 14;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.3;
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* holds the /Send.png phone (.center-shot) — hidden until the canvas window
+   dissolves; the reveal tween that used to draw the outline now shows it */
+.act3-grid .card-center {
+  position: relative;
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* the headline lands over the phone's scan area: top edge 180px into the
+   674px-tall phone (≈31% to the TITLE CENTER, incl. half its final height) */
+.act3-title-final-slot {
+  position: absolute;
+  left: 50%;
+  top: 31.2%;
+  width: 0;
+  height: 0;
+}
+
+.act3-hero {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* the act-1 finale look, act-1 mechanics: the container (and canvas) are
+   ALWAYS fullscreen and never transformed — the 60px frame + radius 80 live
+   in clip-path, and the shrinking window CROPS the frames, never scales them */
+.act3-window {
+  position: absolute;
+  inset: 0;
+  clip-path: inset(60px 60px 60px 60px round 80px);
+  background: #dcd7f5; /* holds the space until the first frame decodes */
+  opacity: 0;
+  visibility: hidden;
+}
+
+.act3-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+.act3-title {
+  grid-area: 1 / 1;
+  margin: 0;
+  z-index: 2;
+  text-align: center;
+  color: #0a0a0a;
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 14;
+  font-size: var(--display-size); /* same display voice as act 2 */
+  font-weight: 700;
+  letter-spacing: var(--display-tracking);
+  line-height: normal;
+  will-change: transform;
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* ---------- Act 2 continuation: "freedom" scene (expand -> frame -> marquee) ----------
+   All defaults are the PRE-scene hidden state (SSR-safe); GSAP owns the reveal.
+   Only .freedom-frame and .freedom-track get will-change: transform. */
+
+/* #f4f4f4 base that backs phases B-C (visible through the 60px frame inset) */
+.freedom-bg {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  background: var(--bit-frame);
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* mask-reveal window: ALWAYS 100vw x 100vh, never transformed вЂ” the only
+   animated property is clip-path (composite-friendly, image stays put).
+   Default = closed window (SSR-safe hidden state). */
+.freedom-frame {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  overflow: hidden;
+  clip-path: inset(50% 50% 50% 50% round 0px);
+}
+
+/* decode fallback under the image вЂ” visible only if the render hasn't loaded */
+.freedom-gradient {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #8b93e8 0%, #c3b6da 55%, #9aa46a 100%);
+}
+
+/* never animated: always fullscreen, always opaque вЂ” the window opens onto it */
+.freedom-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: bottom;
+}
+
+/* marquee track: left is set from JS so the first "Total freedom" slot sits
+   dead-center; GSAP owns transform (yPercent -50 + xPercent loop) */
+.freedom-track {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  display: flex;
+  width: max-content;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+/* each half carries its own gaps + trailing gap, so -50% is one exact half */
+.freedom-track-half {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  padding-right: 40px;
+}
+
+.freedom-phrase {
+  color: #fff;
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 14;
+  font-size: var(--display-size);
+  font-weight: 700;
+  letter-spacing: var(--display-tracking);
+  line-height: normal;
+  white-space: nowrap;
+}
+
+/* side phrases live at marquee size from the start (row is uniform at loop time)
+   and reveal by opacity in phase B; "Total freedom" is never opacity-animated вЂ”
+   typeset at 160, GSAP-scaled 1 -> 0.9 during phase B */
+.freedom-phrase--side {
+  transform: scale(0.9);
+  opacity: 0;
+}
+
+.freedom-subtitle {
+  position: absolute;
+  /* 347px below center per the mock (~900px viewport); on short screens the
+     fixed offset would leave the viewport — cap it at 40svh */
+  top: calc(50% + min(347px, 40svh));
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  color: #fff;
+  text-align: center;
+  font-family: var(--font-subtitle);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: normal;
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* ---------- site header (Figma 78:2403) ----------
+   Page-level FIXED overlay (not inside any pinned stage — pins create
+   transform contexts that would re-anchor position:fixed). Revealed by the
+   freedom act at the end of phase B (via the .freedom-header hook class),
+   then persists across the later acts.
+   Theme = --hd-* vars keyed off [data-theme]; switching is a 300ms color
+   transition (state change, not scrub). */
+.freedom-header {
+  position: fixed;
+  top: 84px;
+  /* width matches the content grid: same side inset as the sections
+     (--frame-b-inset) and the same 1400px cap, centered. Centered via
+     left/right + margin auto — NOT translateX: GSAP owns the transform
+     channel (Hero slides the header with y). */
+  left: var(--frame-b-inset);
+  right: var(--frame-b-inset);
+  max-width: 1400px;
+  margin-inline: auto;
+  z-index: 100;
+  /* ships VISIBLE — the header greets on the intro scene from the very
+     first paint (no fonts/JS wait). Hero's intro trigger slides it away as
+     the narrative starts; the freedom handoff re-shows it (Hero.tsx). If
+     the page loads mid-scroll, Hero snaps it hidden before first tween. */
+}
+
+.site-header {
+  /* light theme (default) */
+  --hd-symbol-bg: var(--bit-purple);
+  --hd-symbol-glyph: #ffffff;
+  --hd-wordmark: var(--ink-strong);
+  --hd-cta-bg: #000000;
+  --hd-cta-text: var(--cta-ink-light);
+  --hd-pill-bg: rgba(255, 255, 255, 0.68);
+  --hd-item-text: var(--ink-strong);
+  --hd-item-active-bg: #313131;
+  --hd-item-active-text: #ffffff;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* no inner padding — the fixed .freedom-header wrapper already carries
+     the grid-aligned inset (--frame-b-inset + 1400px cap) */
+  padding: 0;
+  border-radius: 20px;
+}
+
+.site-header[data-theme="dark"] {
+  --hd-symbol-bg: #ffffff;
+  --hd-symbol-glyph: #000000;
+  --hd-wordmark: #ffffff;
+  --hd-cta-bg: #ffffff;
+  --hd-cta-text: #000000;
+  --hd-pill-bg: rgba(255, 255, 255, 0.14);
+  --hd-item-text: #ffffff;
+  --hd-item-active-bg: #ffffff;
+  --hd-item-active-text: #000000;
+}
+
+.site-header__logo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+}
+
+/* 32x32 brand symbol; glyph = logo-mark.svg via CSS mask so the dark theme
+   recolors it without a second asset (Figma "Subtract", ~20.75x19.36 within
+   the 32px square — the SVG viewBox already carries that inset) */
+.site-header__mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 8.329px;
+  background: var(--hd-symbol-bg);
+  position: relative;
+  transition: background-color 300ms ease;
+}
+
+.site-header__mark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--hd-symbol-glyph);
+  mask: url("/logo-mark.svg") center / contain no-repeat;
+  -webkit-mask: url("/logo-mark.svg") center / contain no-repeat;
+  transition: background-color 300ms ease;
+}
+
+.site-header__wordmark {
+  font-family: var(--font-brand);
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--hd-wordmark);
+  transition: color 300ms ease;
+}
+
+.site-header__nav {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+  border-radius: 22px;
+  background: var(--hd-pill-bg);
+  /* single standard property ONLY — Lightning CSS (Turbopack) silently
+     drops the whole backdrop-filter pair when a -webkit- duplicate
+     follows; the prefixer handles vendor prefixes for the targets */
+  backdrop-filter: blur(12px);
+  transition: background-color 300ms ease;
+}
+
+.site-header__nav a {
+  /* constant padding — the hover fill must never resize the pill */
+  padding: 8px 12px;
+  border-radius: 20px;
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 16px;
+  font-weight: 400;
+  color: var(--hd-item-text);
+  text-decoration: none;
+  /* 200ms hover fill — interaction transition, not scrub */
+  transition: background-color 200ms ease-out, color 200ms ease-out;
+}
+
+.site-header__nav a:hover,
+.site-header__nav a.is-active {
+  background: var(--hd-item-active-bg);
+  color: var(--hd-item-active-text);
+}
+
+.site-header__cta {
+  padding: 12px 14px;
+  border-radius: 20px;
+  background: var(--hd-cta-bg);
+  color: var(--hd-cta-text);
+  font-family: var(--font-sans);
+  font-size: 16px;
+  line-height: 24px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color 300ms ease, color 300ms ease,
+    transform 200ms ease-out;
+}
+
+.site-header__cta:hover {
+  transform: translateY(-1px);
+}
+
+.site-header__cta:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* ---------- header, ≤768px: burger + dropdown panel ----------
+   Burger and panel are CHILDREN of .site-header: the freedom reveal
+   (autoAlpha on .freedom-header) and the --hd-* theme switch must cover
+   them too. The panel animates its OWN opacity/transform — the header
+   root's transform channel belongs to GSAP (Hero slides it with y). */
+.site-header__burger,
+.site-header__menu {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .freedom-header {
+    top: 16px;
+  }
+
+  .site-header {
+    gap: 10px;
+  }
+
+  /* logo left; CTA + burger cluster right (justify-between would spread
+     the three remaining children evenly) */
+  .site-header__logo {
+    margin-right: auto;
+  }
+
+  .site-header__nav {
+    display: none; /* the pill physically can't fit — panel takes over */
+  }
+
+  .site-header__cta {
+    padding: 10px 12px;
+    font-size: 15px;
+    line-height: 20px;
+  }
+
+  .site-header__burger {
+    display: block;
+    position: relative;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    border: 0;
+    border-radius: 14px;
+    background: var(--hd-pill-bg);
+    backdrop-filter: blur(12px);
+    cursor: pointer;
+    transition: background-color 300ms ease;
+  }
+
+  .site-header__burger span {
+    position: absolute;
+    left: 13px;
+    right: 13px;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--hd-item-text);
+    transition: transform 200ms ease-out, background-color 300ms ease;
+  }
+
+  .site-header__burger span:first-child {
+    top: calc(50% - 5px);
+  }
+
+  .site-header__burger span:last-child {
+    top: calc(50% + 3px);
+  }
+
+  /* open: the two lines fold into an X */
+  .site-header[data-menu-open] .site-header__burger span:first-child {
+    transform: translateY(4px) rotate(45deg);
+  }
+
+  .site-header[data-menu-open] .site-header__burger span:last-child {
+    transform: translateY(-4px) rotate(-45deg);
+  }
+
+  .site-header__menu {
+    position: absolute;
+    top: calc(100% + 10px);
+    left: 0;
+    right: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 8px;
+    border-radius: 20px;
+    background: var(--hd-pill-bg);
+    backdrop-filter: blur(18px);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-6px);
+    /* visibility flips AFTER the fade-out (0s 200ms) so the closing panel
+       stays visible while it fades; on open the delay is overridden below */
+    transition: opacity 200ms ease-out, transform 200ms ease-out,
+      background-color 300ms ease, visibility 0s 200ms;
+  }
+
+  .site-header[data-menu-open] .site-header__menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    transition: opacity 200ms ease-out, transform 200ms ease-out,
+      background-color 300ms ease;
+  }
+
+  .site-header__menu a {
+    padding: 14px 16px;
+    border-radius: 14px;
+    font-family: var(--font-sans);
+    font-size: 16px;
+    line-height: 20px;
+    font-weight: 400;
+    color: var(--hd-item-text);
+    text-decoration: none;
+    transition: background-color 200ms ease-out, color 200ms ease-out;
+  }
+
+  .site-header__menu a:hover,
+  .site-header__menu a:active {
+    background: var(--hd-item-active-bg);
+    color: var(--hd-item-active-text);
+  }
+}
+
+/* reduced motion: states swap instantly (the X morph and open/closed states
+   themselves stay — they carry meaning, only the movement goes) */
+@media (prefers-reduced-motion: reduce) {
+  .site-header__menu,
+  .site-header__burger span {
+    transition: none;
+  }
+}
+
+/* ---------- ACT 4 — "Your wallet in your pocket": holo tilt card -> bento ----------
+   Same skeleton as acts 2/3. Defaults are the PRE-scene hidden state
+   (SSR-safe); GSAP owns the reveal. The grid is ALWAYS in its final layout —
+   only transform/opacity animate. */
+.act4 {
+  position: relative;
+  width: 100%;
+  height: 100svh; /* small-viewport unit: stable under mobile browser chrome,
+                     and static per-load so ScrollTrigger pins measure once */
+  overflow: hidden;
+  background: var(--act4-bg);
+}
+
+.act4-grid {
+  position: absolute;
+  top: calc(50% - var(--bento-h) / 2);
+  height: var(--bento-h);
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: min(1124px, calc(100% - 72px));
+  display: grid;
+  grid-template-columns: 387fr 310fr 387fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 15px 20px;
+  z-index: 1;
+}
+
+.act4-card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  overflow: hidden;
+  padding: 32px;
+  border-radius: 30px;
+  background: linear-gradient(180deg, #efefef 0%, #fff 49.84%);
+  color: var(--act2-card-ink);
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 14;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.3;
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* holds the /Card details.png phone (.center-shot) — hidden until the holo
+   card dissolves mid-FLIP; the old outline-reveal tween now shows it */
+.act4-grid .card-center {
+  position: relative;
+  opacity: 0;
+  visibility: hidden;
+}
+
+
+/* hero overlay: pointer-TRANSPARENT layer; only the card wrapper restores
+   pointer events — hover tilt works, nothing else blocks the page */
+.act4-hero {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* positioning wrapper — the ONLY scroll-tween target around the card;
+   scroll animations never reach the component's internal transforms */
+.act4-card-pos {
+  grid-area: 1 / 1;
+  width: fit-content;
+  pointer-events: auto;
+  will-change: transform;
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* act-4 headline: the shared .act-title-line lines (see acts 2/4 block) */
+
+/* ---- BitCard face content (rendered between shine and glare) ---- */
+.pc-content-slot .bit-card-face {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 36px 40px;
+  border-radius: 0;
+  color: #fff;
+}
+
+.pc-content-slot .bit-card-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: 0;
+}
+
+.pc-content-slot .bit-card-wordmark {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  border-radius: 0;
+}
+
+.pc-content-slot .bit-card-chip {
+  width: 52px;
+  height: 38px;
+  border-radius: 8px;
+  background: linear-gradient(135deg, #e8e6df 0%, #b8b5a9 48%, #d9d6cc 100%);
+  box-shadow: inset 0 0 0 1.5px rgb(0 0 0 / 0.25);
+}
+
+.pc-content-slot .bit-card-number {
+  font-family: var(--font-subtitle);
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: 0.14em;
+  color: rgb(255 255 255 / 0.85);
+  border-radius: 0;
+}
+
+/* ==================== PART B (Crypto -> Footer) ==================== */
+
+/* ---------- Crypto hero (#crypto, Figma 78:2422) ----------
+   Framed scene with the part-B frame tokens (20/60). Reveal targets ship
+   hidden (SSR-safe); GSAP owns the reveal. Parallax layers are moved ONLY
+   via x/y transforms (gsap.quickTo). */
+.crypto-hero {
+  background: var(--bit-white);
+  padding: var(--frame-b-inset);
+}
+
+.crypto-hero__frame {
+  position: relative;
+  height: 92svh;
+  border-radius: var(--frame-b-radius);
+  overflow: hidden;
+}
+
+.crypto-hero__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* cloud sprites — positioned per the mock offsets (Figma 78:2425/78:2428:
+   sprites 2048px wide over a 1400px frame, back shifted up, front shifted
+   down) so the copy stays readable between the layers. Oversized beyond the
+   frame, so the ±28px parallax drift never shows an edge. */
+.crypto-hero__clouds-back,
+.crypto-hero__clouds-front {
+  position: absolute;
+  left: -23%;
+  width: 146%; /* 2048 / 1400 */
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  pointer-events: none;
+  will-change: transform;
+}
+
+.crypto-hero__clouds-back {
+  z-index: 1;
+  top: -33%; /* mock: -220 / 661 */
+  aspect-ratio: 2048 / 1117;
+  background-image: url("/crypto/clouds-back.png");
+}
+
+.crypto-hero__clouds-front {
+  z-index: 3;
+  top: 8%; /* mock: 56 / 661 */
+  aspect-ratio: 2048 / 1210;
+  background-image: url("/crypto/clouds-front.png");
+}
+
+.crypto-hero__copy {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  will-change: transform;
+}
+
+/* Figma 78:2427: DM Sans Bold 120, #0A2D43, -7.2px, centered, two lines */
+.crypto-hero__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 14;
+  font-size: clamp(40px, 8.33vw, 120px);
+  font-weight: 700;
+  letter-spacing: -0.06em;
+  line-height: normal;
+  text-align: center;
+  color: #0a2d43;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.crypto-hero__finally {
+  opacity: 0.45;
+}
+
+/* Figma 78:2430: DM Sans Regular 16, black, centered at the frame bottom */
+.crypto-hero__subtitle {
+  position: absolute;
+  z-index: 2;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(90%, 1000px);
+  margin: 0;
+  font-family: var(--font-sans);
+  font-variation-settings: "opsz" 14;
+  font-size: 16px;
+  font-weight: 400;
+  text-align: center;
+  color: #000;
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* ---------- Crypto highlights (Figma 78:2422 lower half) ----------
+   Two alternating rows: illustration card <-> text block. */
+.crypto-hl {
+  background: var(--bit-white);
+  padding: 120px var(--frame-b-inset);
+  display: flex;
+  flex-direction: column;
+  gap: 120px;
+}
+
+.crypto-hl__row {
+  display: grid;
+  grid-template-columns: 660fr 468fr;
+  align-items: center;
+  gap: clamp(48px, 8vw, 132px);
+  max-width: 1400px;
+  width: 100%;
+  margin-inline: auto;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.crypto-hl__row--flip {
+  grid-template-columns: 468fr 660fr;
+}
+
+.crypto-hl__card {
+  border-radius: 24px;
+  /* soft top-left light so the (currently empty) card reads as a surface,
+     not a flat grey rectangle — asset drops in over it unchanged */
+  background: radial-gradient(
+    130% 130% at 18% 0%,
+    #f5f5f5 0%,
+    var(--card-grey) 62%
+  );
+  aspect-ratio: 660 / 446;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+
+.crypto-hl__card img {
+  /* full-bleed card artwork (same 660/446 ratio as the card itself) */
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.crypto-hl__text {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* small, medium-weight, wide-tracked label (refined from the mock's 18px
+   regular — a label, not a subhead) */
+.crypto-hl__eyebrow {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-variation-settings: "opsz" 14;
+  font-size: 14px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+/* Figma 78:2436: DM Sans Medium 24, black */
+.crypto-hl__body {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-variation-settings: "opsz" 14;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.4;
+  color: #000;
+}
+
+/* ---------- Security (#security, Figma 78:3365) ----------
+   Static dark rounded frame (part-B tokens 20/60) — no pin, no scrub.
+   .security__frame only animates its background (light->black toggle);
+   the light page bg shows as the 20px gutter around the rounded corners. */
+.security {
+  position: relative;
+  width: 100%;
+  padding: var(--frame-b-inset);
+  background: var(--page-light);
+}
+
+.security__frame {
+  position: relative;
+  overflow: hidden;
+  border-radius: var(--frame-b-radius);
+  background: var(--page-light); /* -> #000 via toggle tween */
+}
+
+/* content column matches .crypto-hl__row above: 1400px centered inside the
+   20px page gutters (the frame inset IS that gutter, so no inline padding);
+   360px top/bottom inside the dark frame (owner request 2026-07-10) */
+.security__content {
+  position: relative;
+  max-width: 1400px;
+  margin-inline: auto;
+  padding: 360px 0;
+}
+
+/* H2 white, left; sub white 80% (per the dark mock) */
+.security__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 14;
+  font-size: clamp(36px, 3.6vw, 52px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: normal;
+  color: #fff;
+  opacity: 0; /* scramble timeline owns the reveal */
+}
+
+.security__sub {
+  margin: 20px 0 0;
+  max-width: 62ch;
+  font-family: var(--font-sans);
+  font-variation-settings: "opsz" 14;
+  font-size: 16px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.8);
+  opacity: 0;
+}
+
+.security__cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+  margin-top: 76px;
+}
+
+/* GSAP owns the card reveal (autoAlpha/y toggle) */
+.security__card {
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* white rounded tile with the animated mock-UI; caption sits BELOW the
+   tile in white (Figma 78:3365; the 3D-icon PNGs were replaced by CSS/SVG
+   loops — owner request 2026-07-10, same treatment as the Trust cards) */
+.security__card-tile {
+  position: relative;
+  border-radius: 24px;
+  background: #fff;
+  aspect-ratio: 387 / 270;
+  overflow: hidden;
+}
+
+/* uniform regular weight — no bold lead (owner decision) */
+.security__card-caption {
+  margin: 24px 0 0;
+  font-family: var(--font-sans);
+  font-variation-settings: "opsz" 14;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+/* ---------- Security card mock-UI loops ----------
+   Each visual acts out its caption's thesis (Trust-card treatment):
+   1. code — a 2FA code types itself in, then "Verified" (6.5s clock);
+   2. face — Face ID scan sweeps, the face resolves to a check (6s clock);
+   3. pin  — keypad presses fill the PIN dots, transfer confirms (7s clock).
+   Digits/dots need a COMMON reset point, so each element gets its own
+   keyframes on the shared clock (per-element delays would let late items
+   bleed into the next cycle). CSS defaults double as the reduced-motion
+   rest state: code filled + Verified, face recognized, PIN entered +
+   confirmed. (Pause control removed — owner request 2026-07-16.) */
+.security__mock {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+
+.security__scene {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.security__mock-label {
+  font-family: var(--font-sans);
+  font-variation-settings: "opsz" 14;
+  font-size: 13px;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+  color: rgba(3, 3, 3, 0.55);
+}
+
+/* shared confirmation pill (Verified / Transfer confirmed) */
+.security__chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  background: var(--bit-purple);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-variation-settings: "opsz" 14;
+  font-size: 12.5px;
+  font-weight: 600;
+}
+
+.security__chip svg {
+  width: 11px;
+  height: 11px;
+}
+
+/* --- card 1: 2FA verification code ------------------------------------- */
+.security__code-cells {
+  display: flex;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.security__code-cell {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 42px;
+  border-radius: 10px;
+  border: 1.5px solid rgba(3, 3, 3, 0.14);
+  background: #fbfcfd;
+  font-family: var(--font-sans);
+  font-variation-settings: "opsz" 14;
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--ink-strong); /* rest = code fully entered */
+}
+
+.security__code-cell--1 {
+  animation: sec-code-1 6.5s linear infinite;
+}
+.security__code-cell--2 {
+  animation: sec-code-2 6.5s linear infinite;
+}
+.security__code-cell--3 {
+  animation: sec-code-3 6.5s linear infinite;
+}
+.security__code-cell--4 {
+  animation: sec-code-4 6.5s linear infinite;
+}
+.security__code-cell--5 {
+  animation: sec-code-5 6.5s linear infinite;
+}
+.security__code-cell--6 {
+  animation: sec-code-6 6.5s linear infinite;
+}
+
+/* digits type in one by one (staggered fill %), clear together at 88% */
+@keyframes sec-code-1 {
+  0%,
+  6% {
+    color: transparent;
+  }
+  8%,
+  88% {
+    color: var(--ink-strong);
+  }
+  91%,
+  100% {
+    color: transparent;
+  }
+}
+
+@keyframes sec-code-2 {
+  0%,
+  11% {
+    color: transparent;
+  }
+  13%,
+  88% {
+    color: var(--ink-strong);
+  }
+  91%,
+  100% {
+    color: transparent;
+  }
+}
+
+@keyframes sec-code-3 {
+  0%,
+  16% {
+    color: transparent;
+  }
+  18%,
+  88% {
+    color: var(--ink-strong);
+  }
+  91%,
+  100% {
+    color: transparent;
+  }
+}
+
+@keyframes sec-code-4 {
+  0%,
+  21% {
+    color: transparent;
+  }
+  23%,
+  88% {
+    color: var(--ink-strong);
+  }
+  91%,
+  100% {
+    color: transparent;
+  }
+}
+
+@keyframes sec-code-5 {
+  0%,
+  26% {
+    color: transparent;
+  }
+  28%,
+  88% {
+    color: var(--ink-strong);
+  }
+  91%,
+  100% {
+    color: transparent;
+  }
+}
+
+@keyframes sec-code-6 {
+  0%,
+  31% {
+    color: transparent;
+  }
+  33%,
+  88% {
+    color: var(--ink-strong);
+  }
+  91%,
+  100% {
+    color: transparent;
+  }
+}
+
+.security__mock--code .security__chip {
+  margin-top: 20px;
+  animation: sec-chip-code 6.5s ease-out infinite;
+}
+
+@keyframes sec-chip-code {
+  0%,
+  40% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.92);
+  }
+  45%,
+  88% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  92%,
+  100% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.92);
+  }
+}
+
+/* --- card 2: Face ID scan ----------------------------------------------- */
+.security__face {
+  width: 132px;
+  height: 132px;
+}
+
+/* rest = recognized: purple brackets, check shown, face + scan hidden */
+.security__face-corners {
+  color: var(--bit-purple);
+  animation: sec-face-corners 6s linear infinite;
+}
+
+.security__face-id {
+  color: var(--ink-strong);
+  opacity: 0;
+  animation: sec-face-id 6s linear infinite;
+}
+
+.security__face-check {
+  color: var(--bit-purple);
+  opacity: 1;
+  animation: sec-face-check 6s linear infinite;
+}
+
+.security__face-scan {
+  color: var(--bit-purple);
+  opacity: 0;
+  animation: sec-face-scan 6s ease-in-out infinite;
+}
+
+.security__mock--face .security__mock-label {
+  margin-top: 18px;
+}
+
+/* scan line sweeps down then back up across the face */
+@keyframes sec-face-scan {
+  0%,
+  5% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+  8% {
+    transform: translateY(6px);
+    opacity: 1;
+  }
+  22% {
+    transform: translateY(82px);
+    opacity: 1;
+  }
+  36% {
+    transform: translateY(6px);
+    opacity: 1;
+  }
+  40%,
+  100% {
+    transform: translateY(0);
+    opacity: 0;
+  }
+}
+
+@keyframes sec-face-id {
+  0%,
+  42% {
+    opacity: 1;
+  }
+  47%,
+  90% {
+    opacity: 0;
+  }
+  95%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes sec-face-check {
+  0%,
+  42% {
+    opacity: 0;
+  }
+  47%,
+  90% {
+    opacity: 1;
+  }
+  95%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes sec-face-corners {
+  0%,
+  42% {
+    color: rgba(3, 3, 3, 0.7);
+  }
+  47%,
+  90% {
+    color: var(--bit-purple);
+  }
+  95%,
+  100% {
+    color: rgba(3, 3, 3, 0.7);
+  }
+}
+
+/* --- card 3: PIN entry on a keypad --------------------------------------- */
+.security__mock--pin .security__chip {
+  animation: sec-chip-pin 7s ease-out infinite;
+}
+
+.security__pin-dots {
+  display: flex;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.security__pin-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  border: 1.5px solid var(--bit-purple);
+  background: var(--bit-purple); /* rest = PIN fully entered */
+}
+
+.security__pin-dot--1 {
+  animation: sec-pin-d1 7s linear infinite;
+}
+.security__pin-dot--2 {
+  animation: sec-pin-d2 7s linear infinite;
+}
+.security__pin-dot--3 {
+  animation: sec-pin-d3 7s linear infinite;
+}
+.security__pin-dot--4 {
+  animation: sec-pin-d4 7s linear infinite;
+}
+
+.security__pin-pad {
+  display: grid;
+  grid-template-columns: repeat(3, 44px);
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.security__pin-key {
+  display: grid;
+  place-items: center;
+  height: 36px;
+  border-radius: 10px;
+  background: #f2f4f7;
+  font-family: var(--font-sans);
+  font-variation-settings: "opsz" 14;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(3, 3, 3, 0.72);
+}
+
+.security__pin-key--p1 {
+  animation: sec-pin-p1 7s ease-out infinite;
+}
+.security__pin-key--p2 {
+  animation: sec-pin-p2 7s ease-out infinite;
+}
+.security__pin-key--p3 {
+  animation: sec-pin-p3 7s ease-out infinite;
+}
+.security__pin-key--p4 {
+  animation: sec-pin-p4 7s ease-out infinite;
+}
+
+/* four key presses (quick purple pulse) at 9 / 20 / 31 / 43% … */
+@keyframes sec-pin-p1 {
+  0%,
+  9%,
+  14%,
+  100% {
+    transform: none;
+    background-color: #f2f4f7;
+    color: rgba(3, 3, 3, 0.72);
+  }
+  10.5% {
+    transform: scale(0.9);
+    background-color: var(--bit-purple);
+    color: #fff;
+  }
+}
+
+@keyframes sec-pin-p2 {
+  0%,
+  20%,
+  25%,
+  100% {
+    transform: none;
+    background-color: #f2f4f7;
+    color: rgba(3, 3, 3, 0.72);
+  }
+  21.5% {
+    transform: scale(0.9);
+    background-color: var(--bit-purple);
+    color: #fff;
+  }
+}
+
+@keyframes sec-pin-p3 {
+  0%,
+  31%,
+  36%,
+  100% {
+    transform: none;
+    background-color: #f2f4f7;
+    color: rgba(3, 3, 3, 0.72);
+  }
+  32.5% {
+    transform: scale(0.9);
+    background-color: var(--bit-purple);
+    color: #fff;
+  }
+}
+
+@keyframes sec-pin-p4 {
+  0%,
+  43%,
+  48%,
+  100% {
+    transform: none;
+    background-color: #f2f4f7;
+    color: rgba(3, 3, 3, 0.72);
+  }
+  44.5% {
+    transform: scale(0.9);
+    background-color: var(--bit-purple);
+    color: #fff;
+  }
+}
+
+/* … and the dots they fill, clearing together at 86% */
+@keyframes sec-pin-d1 {
+  0%,
+  10% {
+    background-color: transparent;
+    border-color: rgba(3, 3, 3, 0.25);
+  }
+  12%,
+  86% {
+    background-color: var(--bit-purple);
+    border-color: var(--bit-purple);
+  }
+  90%,
+  100% {
+    background-color: transparent;
+    border-color: rgba(3, 3, 3, 0.25);
+  }
+}
+
+@keyframes sec-pin-d2 {
+  0%,
+  21% {
+    background-color: transparent;
+    border-color: rgba(3, 3, 3, 0.25);
+  }
+  23%,
+  86% {
+    background-color: var(--bit-purple);
+    border-color: var(--bit-purple);
+  }
+  90%,
+  100% {
+    background-color: transparent;
+    border-color: rgba(3, 3, 3, 0.25);
+  }
+}
+
+@keyframes sec-pin-d3 {
+  0%,
+  32% {
+    background-color: transparent;
+    border-color: rgba(3, 3, 3, 0.25);
+  }
+  34%,
+  86% {
+    background-color: var(--bit-purple);
+    border-color: var(--bit-purple);
+  }
+  90%,
+  100% {
+    background-color: transparent;
+    border-color: rgba(3, 3, 3, 0.25);
+  }
+}
+
+@keyframes sec-pin-d4 {
+  0%,
+  44% {
+    background-color: transparent;
+    border-color: rgba(3, 3, 3, 0.25);
+  }
+  46%,
+  86% {
+    background-color: var(--bit-purple);
+    border-color: var(--bit-purple);
+  }
+  90%,
+  100% {
+    background-color: transparent;
+    border-color: rgba(3, 3, 3, 0.25);
+  }
+}
+
+@keyframes sec-chip-pin {
+  0%,
+  52% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.92);
+  }
+  57%,
+  86% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  90%,
+  100% {
+    opacity: 0;
+    transform: translateY(8px) scale(0.92);
+  }
+}
+
+/* reduced motion (defaults above ARE the rest state) */
+@media (prefers-reduced-motion: reduce) {
+  /* chips repeated: their base rules are two-class selectors, so the
+     wildcard alone loses specificity and the loop would keep running */
+  .security__mock *,
+  .security__mock--code .security__chip,
+  .security__mock--pin .security__chip {
+    animation: none;
+  }
+}
+
+/* ---------- Built on trust — Cash-App-reference layout ----------
+   Intro column (H2 + body; no CTA by owner decision) beside three square
+   feature cards
+   with captions below (owner request 2026-07-09; replaces the 78:4432 stat
+   tiles). Captions keep the ORIGINAL stat meanings — Bulletproof / Licensed
+   / 100+ — and each visual animates its meaning: encryption toggle whose
+   padlock closes, license panel over the Warsaw map with an HQ ping, and a
+   toast stack of payments across the globe. Card loops are pure CSS,
+   frozen to a designed rest state under prefers-reduced-motion (pause
+   control removed — owner request 2026-07-16). */
+.trust {
+  background: var(--page-light);
+  padding: 140px var(--frame-b-inset) 120px;
+}
+
+.trust__grid {
+  display: grid;
+  grid-template-columns: minmax(260px, 330px) 1fr;
+  gap: clamp(40px, 5vw, 88px);
+  align-items: start;
+  max-width: 1400px;
+  margin-inline: auto;
+}
+
+.trust__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 14;
+  font-size: clamp(34px, 3.3vw, 48px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.08;
+  color: var(--ink-strong);
+  opacity: 0;
+  visibility: hidden;
+}
+
+.trust__body {
+  margin: 20px 0 0;
+  font-family: var(--font-sans);
+  font-variation-settings: "opsz" 14;
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: rgba(3, 3, 3, 0.75);
+  opacity: 0;
+  visibility: hidden;
+}
+
+.trust__cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.trust__card {
+  margin: 0;
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* positioned box for the visual + its pause control (the control lives
+   OUTSIDE the aria-hidden visual, so it can't sit inside it) */
+.trust__tile {
+  position: relative;
+}
+
+.trust__visual {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 24px;
+  overflow: hidden;
+}
+
+/* caption = the original stat: bold lead + muted descriptor */
+.trust__caption {
+  margin: 20px 0 0;
+  font-family: var(--font-sans);
+  font-variation-settings: "opsz" 14;
+  font-size: 19px;
+  font-weight: 400;
+  letter-spacing: -0.01em;
+  color: rgba(3, 3, 3, 0.62);
+}
+
+.trust__caption strong {
+  margin-right: 0.14em;
+  font-weight: 700;
+  color: var(--ink-strong);
+}
+
+/* shared round badge (currency symbols on toasts, check on the panel) */
+.trust__dot {
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--bit-purple);
+  color: #fff;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* --- card 1: alert toasts on brand purple ------------------------------ */
+.trust__visual--alerts {
+  background: var(--bit-purple);
+}
+
+.trust__toasts {
+  position: absolute;
+  inset: 0;
+}
+
+.trust__toast {
+  position: absolute;
+  left: clamp(16px, 8%, 32px);
+  right: clamp(16px, 8%, 32px);
+  top: calc(50% - 34px);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 18px;
+  border-radius: 16px;
+  background: #fff;
+  animation: trust-toast 10s cubic-bezier(0.22, 1, 0.36, 1) infinite;
+}
+
+/* negative delays pre-populate the stack (below-ghost / focus / above-ghost
+   / offstage); the same offsets double as the reduced-motion rest state */
+.trust__toast:nth-child(1) {
+  animation-delay: -2.5s;
+  transform: translateY(56px) scale(0.95);
+  opacity: 0.55;
+}
+
+.trust__toast:nth-child(2) {
+  animation-delay: -5s;
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+
+.trust__toast:nth-child(3) {
+  animation-delay: -7.5s;
+  transform: translateY(-56px) scale(0.95);
+  opacity: 0.55;
+}
+
+.trust__toast:nth-child(4) {
+  animation-delay: 0s;
+  transform: translateY(96px) scale(0.9);
+  opacity: 0;
+}
+
+.trust__toast-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.trust__toast-text strong {
+  font-family: var(--font-sans);
+  font-variation-settings: "opsz" 14;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--ink-strong);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trust__toast-text span {
+  font-family: var(--font-sans);
+  font-variation-settings: "opsz" 14;
+  font-size: 13px;
+  color: rgba(3, 3, 3, 0.6);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@keyframes trust-toast {
+  0% {
+    transform: translateY(96px) scale(0.9);
+    opacity: 0;
+  }
+  7%,
+  25% {
+    transform: translateY(56px) scale(0.95);
+    opacity: 0.55;
+  }
+  32%,
+  50% {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+  57%,
+  75% {
+    transform: translateY(-56px) scale(0.95);
+    opacity: 0.55;
+  }
+  82%,
+  100% {
+    transform: translateY(-110px) scale(0.9);
+    opacity: 0;
+  }
+}
+
+/* --- card 2: license panel over the Warsaw map -------------------------- */
+.trust__visual--map {
+  background: #e9edf1;
+}
+
+.trust__map {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+/* HQ location ping — quiet radar pulse in the map strip above the panel */
+.trust__ping {
+  position: absolute;
+  top: 9%;
+  left: 63%;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--bit-purple);
+}
+
+.trust__ping-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: var(--bit-purple);
+  animation: trust-ping 2.6s ease-out infinite;
+}
+
+@keyframes trust-ping {
+  0% {
+    transform: scale(0.5);
+    opacity: 0.5;
+  }
+  70%,
+  100% {
+    transform: scale(3.2);
+    opacity: 0;
+  }
+}
+
+.trust__panel {
+  position: absolute;
+  left: clamp(14px, 7%, 30px);
+  right: clamp(14px, 7%, 30px);
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 20px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 16px 40px rgba(3, 3, 3, 0.12);
+}
+
+.trust__panel-title {
+  margin: 12px 0 0;
+  font-family: var(--font-sans);
+  font-variation-settings: "opsz" 14;
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: var(--ink-strong);
+}
+
+.trust__panel-rows {
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.trust__panel-rows li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-sans);
+  font-variation-settings: "opsz" 14;
+  font-size: 12.5px;
+  color: rgba(3, 3, 3, 0.72);
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.trust__panel-rows svg {
+  flex: 0 0 auto;
+  width: 15px;
+  height: 15px;
+  color: rgba(3, 3, 3, 0.55);
+}
+
+/* --- card 1: encryption toggle on black --------------------------------- */
+.trust__visual--lock {
+  background: #0a0a0a;
+  display: grid;
+  place-items: center;
+}
+
+.trust__lock {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 28px;
+}
+
+.trust__toggle {
+  position: relative;
+  display: block;
+  width: 148px;
+  height: 84px;
+  border-radius: 999px;
+  /* rest state = locked (brand purple); the loop overrides it */
+  background: var(--bit-purple);
+  animation: trust-track 6s ease-in-out infinite;
+}
+
+.trust__toggle-knob {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  display: grid;
+  place-items: center;
+  width: 68px;
+  height: 68px;
+  border-radius: 50%;
+  background: #fff;
+  transform: translateX(64px);
+  animation: trust-knob 6s cubic-bezier(0.34, 1.3, 0.44, 1) infinite;
+}
+
+/* padlock inside the knob — open while unlocked, closes as the toggle
+   flips on (same 6s clock as trust-knob) */
+.trust__knob-lock {
+  grid-area: 1 / 1;
+  width: 26px;
+  height: 26px;
+  color: #0a0a0a;
+}
+
+.trust__knob-lock--open {
+  opacity: 0;
+  animation: trust-lock-open 6s linear infinite;
+}
+
+.trust__knob-lock--closed {
+  opacity: 1;
+  animation: trust-lock-closed 6s linear infinite;
+}
+
+@keyframes trust-lock-open {
+  0%,
+  40% {
+    opacity: 1;
+  }
+  48%,
+  88% {
+    opacity: 0;
+  }
+  96%,
+  100% {
+    opacity: 1;
+  }
+}
+
+@keyframes trust-lock-closed {
+  0%,
+  40% {
+    opacity: 0;
+  }
+  48%,
+  88% {
+    opacity: 1;
+  }
+  96%,
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes trust-knob {
+  0%,
+  40% {
+    transform: translateX(0);
+  }
+  48%,
+  88% {
+    transform: translateX(64px);
+  }
+  96%,
+  100% {
+    transform: translateX(0);
+  }
+}
+
+@keyframes trust-track {
+  0%,
+  40% {
+    background-color: #2e2e2e;
+  }
+  48%,
+  88% {
+    background-color: var(--bit-purple);
+  }
+  96%,
+  100% {
+    background-color: #2e2e2e;
+  }
+}
+
+.trust__lock-label {
+  font-family: var(--font-sans);
+  font-variation-settings: "opsz" 14;
+  font-size: clamp(18px, 1.5vw, 22px);
+  font-weight: 500;
+  color: #fff;
+}
+
+/* reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .trust__toast,
+  .trust__toggle,
+  .trust__toggle-knob,
+  .trust__knob-lock,
+  .trust__ping-ring {
+    animation: none;
+  }
+
+  /* ring collapses to the static HQ dot */
+  .trust__ping-ring {
+    opacity: 0;
+  }
+}
+
+/* ---------- Get started (#start) — vertical roadmap ----------
+   Rides the page-light canvas (one tail surface from Security's outro to the
+   footer — no white/near-white seams mid-scroll). Steps are a quiet stack of
+   elevated white cards; the active card lifts to pure white behind a
+   purple-tinted hairline. The scrubbed progress and the active step pick up
+   the brand purple: the only place in part B where the accent leaves the
+   artwork and touches UI, which is exactly why it reads as a "current
+   position" marker. Content column = 1400px, same as .trust__grid. */
+.gs {
+  background: var(--page-light);
+  padding: 160px var(--frame-b-inset) 180px;
+}
+
+.gs__grid {
+  display: grid;
+  grid-template-columns: minmax(300px, 440px) 1fr;
+  gap: clamp(48px, 8vw, 140px);
+  max-width: 1400px;
+  margin-inline: auto;
+  align-items: start;
+}
+
+.gs__intro {
+  position: sticky;
+  top: 24vh;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.gs__title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 14;
+  font-size: clamp(46px, 5vw, 76px);
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  line-height: 1.04;
+  color: var(--ink-strong);
+}
+
+.gs__sub {
+  margin: 22px 0 0;
+  font-family: var(--font-sans);
+  font-variation-settings: "opsz" 14;
+  font-size: clamp(17px, 1.5vw, 21px);
+  letter-spacing: -0.012em;
+  line-height: 1.45;
+  color: rgba(3, 3, 3, 0.55);
+}
+
+.gs__list {
+  position: relative;
+  padding-left: 52px;
+  /* the rail is bounded by the first/last dot, not the list box — the line
+     must not dangle past the final step */
+  padding-block: 4px;
+}
+
+/* rail: hairline track + drawn-in gradient line + luminous head. The line
+   and the head animate ONLY via transform (scaleY / translateY, origin
+   top) — scrubbed, invariant-safe; both stop at the last dot's center
+   (measured in JS). */
+.gs__rail {
+  position: absolute;
+  left: 0;
+  top: 44px; /* first dot center (card pad 30 + num line mid) */
+  bottom: 0;
+  width: 2px;
+  border-radius: 1px;
+  background: rgba(3, 3, 3, 0.06);
+}
+
+/* the rail must stop at the LAST dot, but card height varies with body
+   wrapping — so the last card paints a page-colored cover over the rail
+   below its own dot instead of the rail guessing a bottom offset */
+.gs__step:last-child::after {
+  content: "";
+  position: absolute;
+  left: -57px;
+  top: 46px; /* just under the 12px dot (top 34) */
+  bottom: -4px; /* through the list's padding-block */
+  width: 12px;
+  background: var(--page-light);
+}
+
+/* tail fades, tip carries the full brand purple — under scaleY the whole
+   ramp compresses into the visible part, so the line always reads as
+   being "drawn" toward its bright end */
+.gs__rail-progress {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(
+    180deg,
+    rgba(68, 31, 218, 0.35),
+    var(--bit-purple) 70%
+  );
+  transform: scaleY(0);
+  transform-origin: top;
+  will-change: transform;
+}
+
+/* the "you are here" spark riding the tip of the line; slides UNDER the
+   station rings (they carry an opaque page-light fill) and docks into the
+   active dot's purple */
+.gs__rail-head {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 8px;
+  height: 8px;
+  margin: -4px 0 0 -4px;
+  border-radius: 50%;
+  background: var(--bit-purple);
+  box-shadow: 0 0 0 4px rgba(68, 31, 218, 0.12),
+    0 0 16px rgba(68, 31, 218, 0.4);
+  will-change: transform;
+}
+
+.gs__steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+/* quiet tile at rest — translucent white, hairline, whisper shadow. The
+   active card lifts: pure white, purple-tinted hairline, deeper (still
+   soft) shadow. All 250ms CSS transitions (not scrub). */
+.gs__step {
+  position: relative;
+  padding: 30px 36px 32px;
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(3, 3, 3, 0.05);
+  box-shadow: 0 1px 2px rgba(3, 3, 3, 0.02), 0 16px 40px rgba(3, 3, 3, 0.03);
+  /* muted -> ink on .is-active */
+  color: rgba(3, 3, 3, 0.38);
+  transition: color 250ms ease, background-color 250ms ease,
+    border-color 250ms ease, box-shadow 250ms ease;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.gs__step.is-active {
+  color: var(--ink-strong);
+  background: #fff;
+  border-color: rgba(68, 31, 218, 0.18);
+  box-shadow: 0 1px 2px rgba(3, 3, 3, 0.03),
+    0 24px 56px rgba(68, 31, 218, 0.07);
+}
+
+/* station ring on the rail (list is padded 52px; the rail sits at its left
+   edge), centered on the step label's line. Resting: hollow hairline ring
+   with an opaque page fill (the track and the head pass behind it); active:
+   fills brand purple with a soft halo. */
+.gs__step-dot {
+  position: absolute;
+  left: -57px; /* centers the 12px dot on the 2px rail */
+  top: 34px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--page-light);
+  border: 2px solid rgba(3, 3, 3, 0.14);
+  transition: background-color 250ms ease, border-color 250ms ease,
+    transform 250ms ease, box-shadow 250ms ease;
+}
+
+.gs__step.is-active .gs__step-dot {
+  background: var(--bit-purple);
+  border-color: var(--bit-purple);
+  transform: scale(1.15);
+  box-shadow: 0 0 0 5px rgba(68, 31, 218, 0.12);
+}
+
+/* small refined step label above the title; goes brand purple when active */
+.gs__step-num {
+  display: block;
+  margin-bottom: 14px;
+  font-family: var(--font-sans);
+  font-variation-settings: "opsz" 14;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: 0.02em;
+  font-variant-numeric: tabular-nums;
+  color: currentColor;
+  transition: color 250ms ease;
+}
+
+.gs__step.is-active .gs__step-num {
+  color: var(--bit-purple);
+}
+
+.gs__step-text {
+  padding-top: 0;
+}
+
+.gs__step-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 14;
+  font-size: clamp(22px, 1.9vw, 26px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  color: currentColor;
+}
+
+.gs__step-body {
+  margin: 10px 0 0;
+  max-width: 52ch;
+  font-family: var(--font-sans);
+  font-variation-settings: "opsz" 14;
+  font-size: 17px;
+  line-height: 1.5;
+  letter-spacing: -0.005em;
+  color: currentColor;
+  transition: color 250ms ease;
+}
+
+/* ink stays on the title; body settles to a soft grey on the active card */
+.gs__step.is-active .gs__step-body {
+  color: rgba(3, 3, 3, 0.6);
+}
+
+/* ---------- FAQ (#faq) ----------
+   Accordion rows wear the page's card language (24px radius, bento fills)
+   instead of generic hairline dividers: resting rows are quiet grey tiles,
+   the open row switches to the acts' lavender — same two-fill checker the
+   bento and trust cards use. */
+.faq {
+  background: var(--page-light);
+  padding: 40px var(--frame-b-inset) 180px;
+}
+
+.faq__title {
+  margin: 0 auto 56px;
+  /* content column matches .security__content: 1400px centered */
+  max-width: 1400px;
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 14;
+  font-size: clamp(32px, 2.9vw, 42px);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--ink-strong);
+  opacity: 0;
+  visibility: hidden;
+}
+
+.faq__list {
+  max-width: 1400px;
+  margin-inline: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.faq__item {
+  border-radius: 24px;
+  background: rgba(3, 3, 3, 0.035);
+  transition: background-color 250ms ease;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.faq__item:hover {
+  background: rgba(3, 3, 3, 0.06);
+}
+
+/* open row joins the bento palette; hover stops competing with the fill */
+.faq__item.is-open,
+.faq__item.is-open:hover {
+  background: var(--card-bg-a);
+}
+
+.faq__question {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  width: 100%;
+  padding: 22px 22px 22px 28px;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-sans);
+  font-variation-settings: "opsz" 14;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--ink-strong);
+}
+
+/* plus-to-cross: 45deg rotation, 250ms (interaction, not scrub); the glyph
+   sits in a white round chip — the pill/tile surface language on a card */
+.faq__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #fff;
+  font-size: 20px;
+  font-weight: 400;
+  line-height: 1;
+  color: var(--ink-strong);
+  transition: transform 250ms ease;
+}
+
+.faq__item.is-open .faq__icon {
+  transform: rotate(45deg);
+}
+
+/* grid-rows expansion trick: 0fr to 1fr, 350ms (interaction, not scrub) */
+.faq__answer {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 350ms ease;
+}
+
+.faq__item.is-open .faq__answer {
+  grid-template-rows: 1fr;
+}
+
+.faq__answer-inner {
+  overflow: hidden;
+  min-height: 0;
+}
+
+.faq__answer-inner p {
+  margin: 0;
+  padding: 0 84px 26px 28px; /* right side clears the icon chip column */
+  max-width: 68ch;
+  font-family: var(--font-sans);
+  font-variation-settings: "opsz" 14;
+  font-size: 16px;
+  line-height: 1.55;
+  color: rgba(3, 3, 3, 0.7);
+}
+
+/* ---------- Footer (Make–Believe reference redesign) ----------
+   A white 60px cap with rounded bottom corners hands the light page over to
+   a FULL-BLEED dark panel (no part-B frame inset anymore). PixelBlast
+   (brand blue-azure) lives behind the content; the freedom marquee rides
+   where the reference shows "Get in Touch". */
+.footer {
+  --footer-pad: var(--frame-b-inset); /* content column matches .faq: 1400px + 20px inset */
+  background: var(--footer-bg);
+  overflow-x: clip; /* the marquee track is wider than the viewport */
+}
+
+/* the hand-off shape: white, viewport-wide, rounded bottom corners let the
+   dark footer show through the cutouts; radius 60px→24px with window width */
+.footer__cap {
+  height: 60px;
+  background: #ffffff;
+  border-radius: 0 0 clamp(24px, 4vw, 60px) clamp(24px, 4vw, 60px);
+}
+
+.footer__panel {
+  position: relative;
+  padding: 44px var(--footer-pad) 36px;
+  color: #fff;
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* content blocks share the .faq column: 1400px centered (marquee excluded —
+   it stays full-bleed) */
+.footer__grid,
+.footer__legal-text,
+.footer__bottom {
+  max-width: 1400px;
+  margin-inline: auto;
+}
+
+/* middle grid: brand logo left, Product column center, Legal far right */
+.footer__grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 48px;
+  padding: 64px 0 clamp(56px, 7vw, 112px);
+}
+
+/* header dark-theme logo, replicated (white mark tile + white wordmark) */
+.footer__logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  align-self: start;
+  justify-self: start;
+  text-decoration: none;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.footer__mark {
+  width: 32px;
+  height: 32px;
+  border-radius: 8.329px;
+  background: #ffffff;
+  position: relative;
+}
+
+.footer__mark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #000000;
+  mask: url("/logo-mark.svg") center / contain no-repeat;
+  -webkit-mask: url("/logo-mark.svg") center / contain no-repeat;
+}
+
+.footer__wordmark {
+  font-family: var(--font-brand);
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+}
+
+/* live PixelBlast WebGL bg — full-bleed behind the panel content; no
+   pointer-events:none (mouse ripple is a feature), content blocks stack
+   above via their position: relative */
+.footer__blast {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+.footer__blast > div,
+.footer__blast canvas {
+  width: 100%;
+  height: 100%;
+}
+
+.footer__col-title {
+  margin: 0 0 16px;
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.footer__col {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.footer__col a {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  color: rgba(255, 255, 255, 0.55);
+  text-decoration: none;
+  transition: color 200ms ease-out;
+}
+
+.footer__col a:hover {
+  color: #fff;
+}
+
+/* both link columns wear the reference's big nav type (Home / Work / About) */
+.footer__col--nav,
+.footer__col--legal {
+  gap: 2px;
+}
+
+.footer__col--nav a,
+.footer__col--legal a {
+  font-size: clamp(24px, 2.3vw, 34px);
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.footer__col--legal {
+  justify-self: end;
+}
+
+/* giant marquee — the reference's "Get in Touch" slot; bleeds to the
+   viewport edges past the panel padding */
+.footer__marquee {
+  position: relative;
+  margin: 0 calc(var(--footer-pad) * -1);
+}
+
+.footer__track {
+  display: flex;
+  width: max-content;
+  white-space: nowrap;
+  will-change: transform;
+}
+
+.footer__track-half {
+  display: flex;
+  align-items: center;
+  gap: 72px;
+  padding-right: 72px;
+}
+
+.footer__phrase {
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 14;
+  font-size: var(--display-size);
+  font-weight: 700;
+  letter-spacing: var(--display-tracking);
+  line-height: 1.05;
+  color: #fff;
+  white-space: nowrap;
+}
+
+/* small legal print above the bottom bar — block rides the 1400px column,
+   paragraphs stay a readable 720px */
+.footer__legal-text {
+  position: relative;
+  margin-top: clamp(40px, 5vw, 72px);
+}
+
+.footer__legal-text p {
+  /* four dense registry/disclaimer paragraphs (LUNTRA legal print) — full
+     content width (the parent's 1400px column), owner request */
+  margin: 0 0 12px;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.45);
+}
+
+/* bottom bar: hairline, copyright left / quick legal links right */
+.footer__bottom {
+  position: relative;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+  margin-top: 28px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.footer__copyright {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.footer__legal-chips {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 24px;
+}
+
+.footer__legal-chips a {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration: none;
+  transition: color 200ms ease-out;
+}
+
+.footer__legal-chips a:hover {
+  color: #fff;
+}
+
+/* ---------- Cookie consent (EU first-layer banner + preferences) ----------
+   Fixed bottom-left card in the part-B frame language: footer-dark surface,
+   20px grid inset, header-CTA pill buttons, Security-style switches.
+   Sits above the header (z 100) — consent outranks navigation. */
+.cookie {
+  position: fixed;
+  left: var(--frame-b-inset);
+  bottom: var(--frame-b-inset);
+  z-index: 120;
+  width: min(440px, calc(100vw - 2 * var(--frame-b-inset)));
+  padding: 24px;
+  border-radius: 24px;
+  background: var(--footer-bg);
+  color: #fff;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.35);
+  animation: cookie-enter 360ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+/* white outline on the dark card — the global purple one would vanish */
+.cookie :focus-visible,
+.cookie:focus-visible {
+  outline-color: #fff;
+}
+
+@keyframes cookie-enter {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.cookie__head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* brand symbol, dark-theme recipe: white tile + ink glyph via the same
+   logo-mark.svg mask the header uses */
+.cookie__mark {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 7.3px;
+  background: #fff;
+  position: relative;
+}
+
+.cookie__mark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: #000;
+  mask: url("/logo-mark.svg") center / contain no-repeat;
+  -webkit-mask: url("/logo-mark.svg") center / contain no-repeat;
+}
+
+.cookie__title {
+  margin: 0;
+  font-family: var(--font-sans);
+  font-size: 18px;
+  font-weight: 800;
+  color: #fff;
+}
+
+.cookie__body {
+  margin: 12px 0 0;
+  font-size: 14px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.cookie__policy {
+  color: #fff;
+  /* explicit — the Tailwind preflight strips the default <a> underline */
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* ---- second layer: per-category rows ---- */
+.cookie__prefs {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.cookie__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 0;
+}
+
+.cookie__row + .cookie__row {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cookie__row-text {
+  min-width: 0;
+}
+
+.cookie__row-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.cookie__row-desc {
+  margin: 2px 0 0;
+  font-size: 13px;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+/* Security-section switch, control-sized */
+.cookie__switch {
+  flex: none;
+  position: relative;
+  width: 46px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.18);
+  cursor: pointer;
+  transition: background-color 200ms ease-out;
+}
+
+.cookie__switch[aria-checked="true"] {
+  background: var(--bit-purple);
+}
+
+.cookie__switch[disabled] {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.cookie__knob {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform 200ms ease-out;
+}
+
+.cookie__switch[aria-checked="true"] .cookie__knob {
+  transform: translateX(18px);
+}
+
+/* ---- actions: Accept / Reject / Save share ONE style — equal prominence
+   on the first layer is an EU requirement ---- */
+.cookie__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.cookie__btn {
+  border: 0;
+  padding: 12px 16px;
+  border-radius: 20px;
+  background: #fff;
+  color: #000;
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 200ms ease-out;
+}
+
+.cookie__btn:hover {
+  transform: translateY(-1px);
+}
+
+.cookie__btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.cookie__more {
+  border: 0;
+  padding: 12px 8px;
+  background: none;
+  color: rgba(255, 255, 255, 0.72);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 20px;
+  font-weight: 400;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition: color 200ms ease-out;
+}
+
+.cookie__more:hover {
+  color: #fff;
+}
+
+@media (max-width: 768px) {
+  .cookie {
+    padding: 20px;
+  }
+
+  /* full-width tap targets, Accept and Reject still visually identical */
+  .cookie__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .cookie__btn,
+  .cookie__more {
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cookie {
+    animation: none;
+  }
+
+  .cookie__switch,
+  .cookie__knob,
+  .cookie__btn,
+  .cookie__more {
+    transition: none;
+  }
+}
+
+/* ---------- Part B — small screens (<=1024 / <=768) ----------
+   Approved sections above keep their own rules; these cover only the four
+   tail sections (Security / Get started / FAQ / Footer). */
+@media (max-width: 1024px) {
+  /* intro column stacks above the card row */
+  .trust__grid {
+    grid-template-columns: 1fr;
+    gap: 56px;
+  }
+
+  .trust__body {
+    max-width: 56ch;
+  }
+
+  .gs__grid {
+    grid-template-columns: 1fr;
+    gap: 72px;
+  }
+
+  /* sticky intro is a two-column device; stacked it just reads as a header */
+  .gs__intro {
+    position: static;
+  }
+
+  /* logo takes its own row; Product / Legal share the second */
+  .footer__grid {
+    grid-template-columns: 1fr 1fr;
+    row-gap: 56px;
+  }
+
+  .footer__logo {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 768px) {
+  .trust {
+    padding: 112px var(--frame-b-inset) 96px;
+  }
+
+  .trust__cards {
+    grid-template-columns: 1fr;
+    gap: 40px;
+  }
+
+  /* full-width squares read too tall stacked — shorten the tiles */
+  .trust__visual {
+    aspect-ratio: 4 / 3;
+  }
+
+  .trust__caption {
+    margin-top: 14px;
+    font-size: 17px;
+  }
+
+  .security__content {
+    padding: 160px 20px;
+  }
+
+  /* cards stack full-width, Trust-style: shortened tile with the mock-UI
+     at natural size, caption below (same principle as .trust__cards) */
+  .security__cards {
+    grid-template-columns: 1fr;
+    gap: 40px;
+    margin-top: 48px;
+  }
+
+  .security__card-tile {
+    aspect-ratio: 4 / 3;
+    border-radius: 20px;
+  }
+
+  .security__card-caption {
+    margin-top: 14px;
+    font-size: 15px;
+  }
+
+  .gs {
+    padding: 112px var(--frame-b-inset) 128px;
+  }
+
+  .gs__list {
+    padding-left: 40px;
+  }
+
+  .gs__steps {
+    gap: 14px;
+  }
+
+  .gs__step {
+    padding: 24px 24px 26px;
+    border-radius: 20px;
+  }
+
+  .gs__step-num {
+    margin-bottom: 10px;
+    font-size: 14px;
+  }
+
+  .gs__step-title {
+    font-size: 20px;
+  }
+
+  .gs__step-dot {
+    left: -45px;
+    top: 27px;
+  }
+
+  .gs__step:last-child::after {
+    left: -45px;
+    top: 39px;
+  }
+
+  .gs__rail {
+    top: 37px;
+  }
+
+  .faq {
+    padding-bottom: 128px;
+  }
+
+  .faq__question {
+    padding: 18px 16px 18px 22px;
+    font-size: 16px;
+  }
+
+  .faq__icon {
+    width: 32px;
+    height: 32px;
+  }
+
+  .faq__answer-inner p {
+    padding: 0 22px 22px;
+  }
+
+  /* crypto hero: landscape frame instead of the 92svh tower — the scene
+     reads as a wide postcard on phones. NO min-height: with aspect-ratio
+     a height floor transfers to the WIDTH and overflows the viewport */
+  .crypto-hero__frame {
+    height: auto;
+    aspect-ratio: 4 / 3;
+  }
+
+  .crypto-hero__subtitle {
+    bottom: 16px;
+    width: 88%;
+    font-size: 13px;
+  }
+
+  /* crypto highlights: fr-columns squeeze instead of overflowing — stack */
+  .crypto-hl {
+    padding: 72px var(--frame-b-inset);
+    gap: 72px;
+  }
+
+  .crypto-hl__row,
+  .crypto-hl__row--flip {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+
+  /* flip rows put the text first in DOM — stacked, the illustration
+     should still lead every row */
+  .crypto-hl__row--flip .crypto-hl__card {
+    order: -1;
+  }
+
+  .crypto-hl__body {
+    font-size: 20px;
+  }
+
+  /* mobile: everything stacks in one column (reference mobile view) */
+  .footer__grid {
+    grid-template-columns: 1fr;
+    row-gap: 44px;
+    padding: 44px 0 72px;
+  }
+
+  .footer__col--legal {
+    justify-self: start;
+  }
+
+  .footer__bottom {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+  }
+
+  .footer__legal-chips {
+    justify-content: flex-start;
+  }
+}
+
+/* ---------- Acts 2/3/4 — ≤768: static unified scroll sections ----------
+   The pinned hero-to-bento choreography is DESKTOP-ONLY: the act components
+   skip GSAP entirely under this breakpoint (useMediaQuery(MOBILE_MQ)), so
+   CSS owns the whole layout — a plain stacked section per act:
+   title → phone screenshot → cards, each card fully expanded (sub + render
+   visible, no hover mechanic). Act 3's money-moves canvas window and act
+   4's holo card overlay are cut; only their titles/phones remain.
+   !important guards the reveal targets against stale GSAP inline styles if
+   the viewport crosses the breakpoint mid-session. */
+@media (max-width: 768px) {
+  .act2,
+  .act3,
+  .act4 {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    padding: 56px 20px;
+  }
+
+  /* SSR-hidden defaults + possible GSAP leftovers -> visible, untransformed */
+  .act2 .act2-card,
+  .act3 .act3-card,
+  .act4 .act4-card,
+  .act2-shot,
+  .act3-grid .card-center,
+  .act4-grid .card-center,
+  .act-title-line,
+  .act3-title {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+  }
+
+  /* ---- section order: title, screenshot, cards ---- */
+  .act2 .act-title-layer,
+  .act4 .act-title-layer,
+  .act3-hero {
+    order: -2;
+  }
+
+  .act2-hero {
+    order: -1;
+  }
+
+  /* ---- titles: static stacked display lines, centered ---- */
+  .act-title-layer {
+    position: static;
+    inset: auto;
+  }
+
+  .act-title-line {
+    position: static;
+    display: block;
+    white-space: normal;
+    text-align: center;
+    font-size: clamp(34px, 10.5vw, 44px);
+  }
+
+  .act3-hero {
+    position: static;
+    inset: auto;
+    display: block;
+    pointer-events: auto;
+  }
+
+  .act3-title {
+    font-size: clamp(34px, 10.5vw, 44px);
+  }
+
+  /* money-moves sequence hidden — the headline alone represents the act */
+  .act3-window {
+    display: none;
+  }
+
+  /* holo card overlay cut — the phone screenshot carries the scene */
+  .act4-hero {
+    display: none;
+  }
+
+  /* ---- act-2 screenshot: static centered phone ---- */
+  .act2-hero {
+    position: static;
+    inset: auto;
+    display: block;
+  }
+
+  .act2-shot {
+    height: auto;
+    width: min(68%, 260px);
+    margin-inline: auto;
+  }
+
+  /* ---- grids become one column: phone first, then cards ---- */
+  .act2-grid,
+  .act3-grid,
+  .act4-grid {
+    position: static;
+    top: auto;
+    height: auto;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  /* columns dissolve — cards become direct flex items of the act column */
+  .bento-col {
+    display: contents;
+  }
+
+  .bento-card {
+    flex: none;
+    min-height: 0;
+  }
+
+  /* act 2's center cell is an empty FLIP anchor — nothing to show */
+  .act2-grid .card-center {
+    display: none;
+  }
+
+  .act3-grid .card-center,
+  .act4-grid .card-center {
+    order: -1;
+    width: min(68%, 260px);
+    aspect-ratio: 310 / 674;
+    margin-inline: auto;
+  }
+
+  /* ---- cards, expanded: title + sub + render in natural flow ---- */
+  .act2-card,
+  .act3-card,
+  .act4-card {
+    padding: 24px;
+    border-radius: 24px;
+    font-size: 20px;
+  }
+
+  .bento-card__sub {
+    opacity: 1;
+    transform: none;
+    max-height: none;
+    font-size: 16px;
+  }
+
+  /* the render leaves its absolute bottom anchor (hover mechanic is off)
+     and flows under the text at full width */
+  .card-illo {
+    position: static;
+    width: 100%;
+    max-height: none;
+    margin-top: 18px;
+  }
+}
+
+
+

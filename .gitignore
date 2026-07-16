@@ -39,3 +39,9 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# internal working docs — not part of the deliverable
+/bitbeon-copy.md
+/prompt-part-b-sections.md
+/CLAUDE.md
+/AGENTS.md

@@ -1,0 +1,344 @@
+/* BitBeon — BitCard styles: React Bits ProfileCard CSS, stripped of the
+   avatar / user-info / details / texture (icon+grain) layers, reproportioned
+   from poster (0.718) to PLASTIC (ISO/IEC 7810 ID-1, 1.586 landscape).
+   Custom-property defaults are scoped to the wrapper (not :root) — the tilt
+   engine writes the live values onto the wrapper inline. */
+
+.pc-card-wrapper {
+  --pointer-x: 50%;
+  --pointer-y: 50%;
+  --pointer-from-center: 0;
+  --pointer-from-top: 0.5;
+  --pointer-from-left: 0.5;
+  --card-opacity: 0;
+  --rotate-x: 0deg;
+  --rotate-y: 0deg;
+  --background-x: 50%;
+  --background-y: 50%;
+  --behind-glow-color: rgba(0, 13, 255, 0.35);
+  --behind-glow-size: 50%;
+  --inner-gradient: none;
+  --sunpillar-1: hsl(2, 100%, 73%);
+  --sunpillar-2: hsl(53, 100%, 69%);
+  --sunpillar-3: hsl(93, 100%, 69%);
+  --sunpillar-4: hsl(176, 100%, 76%);
+  --sunpillar-5: hsl(228, 100%, 74%);
+  --sunpillar-6: hsl(283, 100%, 73%);
+  --sunpillar-clr-1: var(--sunpillar-1);
+  --sunpillar-clr-2: var(--sunpillar-2);
+  --sunpillar-clr-3: var(--sunpillar-3);
+  --sunpillar-clr-4: var(--sunpillar-4);
+  --sunpillar-clr-5: var(--sunpillar-5);
+  --sunpillar-clr-6: var(--sunpillar-6);
+  --card-radius: 24px; /* plastic corner ≈3.18mm → ≈24px @647px width */
+  --tilt-mult: 1; /* tilt attenuation — the landed state halves the angles */
+
+  /* holo vision (tuned in holo-card-playground): hover-state shine filters;
+     idle state derives from these via the original ×0.78/×0.89/×0.66 dampers */
+  --shine-brightness: 1.03;
+  --shine-contrast: 0.86;
+  --shine-saturate: 1.1;
+  --shine-hue: 64deg; /* hue-rotate over the sunpillar palette */
+  --shine-idle-opacity: 0.5;
+
+  /* symbol mask (React Bits iconUrl analog) — the shine shows only through
+     the mask's symbols. White-on-transparent png → alpha mode. */
+  --holo-mask: none; /* BitCard.tsx writes url(iconUrl) here */
+  --holo-mask-mode: alpha;
+  --holo-mask-repeat: space;
+  --holo-mask-size: 30%;
+
+  transform: translate3d(0, 0, 0.1px);
+  position: relative;
+  touch-action: none;
+}
+
+.pc-behind {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background: radial-gradient(
+    circle at var(--pointer-x) var(--pointer-y),
+    var(--behind-glow-color) 0%,
+    transparent var(--behind-glow-size)
+  );
+  filter: blur(50px) saturate(1.1);
+  opacity: calc(0.8 * var(--card-opacity));
+  transition: opacity 200ms ease;
+}
+
+.pc-card-wrapper:hover,
+.pc-card-wrapper.active {
+  --card-opacity: 1;
+}
+
+/* ---- plastic proportions: the key change vs the poster original ---- */
+.pc-card {
+  aspect-ratio: 1.586; /* ISO/IEC 7810 ID-1: 85.6 × 53.98 mm */
+  width: min(647px, 60vw); /* frame 30 size; no height / svh logic */
+  display: grid;
+  border-radius: var(--card-radius);
+  position: relative;
+  background-blend-mode: color-dodge, normal, normal, normal;
+  /* much lighter than the React Bits original (0.8) — the card lands on a
+     light phone screen and a heavy umbra reads as a dirty smudge there */
+  box-shadow: rgba(0, 0, 0, 0.22) calc((var(--pointer-from-left) * 10px) - 3px)
+    calc((var(--pointer-from-top) * 20px) - 6px) 20px -5px;
+  transition: transform 1s ease;
+  transform: translateZ(0) rotateX(0deg) rotateY(0deg);
+  background: rgba(0, 0, 0, 0.9);
+  backface-visibility: hidden;
+  overflow: hidden;
+}
+
+.pc-card:hover,
+.pc-card.active {
+  transition: none;
+  transform: translateZ(0)
+    rotateX(calc(var(--rotate-y) * var(--tilt-mult)))
+    rotateY(calc(var(--rotate-x) * var(--tilt-mult)));
+}
+
+.pc-card-shell.entering .pc-card {
+  transition: transform 180ms ease-out;
+}
+
+/* perspective must sit on the card's DIRECT parent: on the wrapper it is
+   swallowed by this intermediate shell and the 3D tilt flattens to a ~2%
+   scale — the card never visibly rotates */
+.pc-card-shell {
+  position: relative;
+  z-index: 1;
+  perspective: 500px;
+}
+
+/* ---- landed state (Act4 toggles .pc-landed once the card sits on the
+   phone screenshot): hover grows the card 5%, tilt angles run at half ---- */
+.pc-card-wrapper.pc-landed {
+  --tilt-mult: 0.5;
+}
+
+.pc-card-wrapper.pc-landed .pc-card-shell {
+  transition: transform 0.3s ease;
+}
+
+.pc-card-wrapper.pc-landed:hover .pc-card-shell {
+  transform: scale(1.05);
+}
+
+.pc-card * {
+  display: grid;
+  grid-area: 1/-1;
+  border-radius: var(--card-radius);
+  pointer-events: none;
+}
+
+.pc-inside {
+  inset: 0;
+  position: absolute;
+  background-image: var(--inner-gradient);
+  background-color: rgba(0, 0, 0, 0.9);
+  transform: none;
+}
+
+.pc-shine {
+  transition: filter 0.8s ease;
+  filter: brightness(calc(var(--shine-brightness) * 0.78))
+    contrast(calc(var(--shine-contrast) * 0.89))
+    saturate(calc(var(--shine-saturate) * 0.66))
+    opacity(var(--shine-idle-opacity)) hue-rotate(var(--shine-hue));
+  animation: holo-bg 18s linear infinite;
+  animation-play-state: running;
+  mix-blend-mode: color-dodge;
+  /* symbol hologram: shine is visible only through the mask symbols,
+     drifting with the tilt (as the React Bits iconUrl layer) */
+  mask-image: var(--holo-mask);
+  mask-mode: var(--holo-mask-mode);
+  mask-repeat: var(--holo-mask-repeat);
+  mask-size: var(--holo-mask-size);
+  mask-position: top calc(200% - (var(--background-y) * 5))
+    left calc(100% - var(--background-x));
+}
+
+.pc-shine,
+.pc-shine::after {
+  --space: 5%;
+  --angle: -45deg;
+  transform: translate3d(0, 0, 1px);
+  overflow: hidden;
+  z-index: 3;
+  background: transparent;
+  background-size: cover;
+  background-position: center;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      var(--sunpillar-clr-1) calc(var(--space) * 1),
+      var(--sunpillar-clr-2) calc(var(--space) * 2),
+      var(--sunpillar-clr-3) calc(var(--space) * 3),
+      var(--sunpillar-clr-4) calc(var(--space) * 4),
+      var(--sunpillar-clr-5) calc(var(--space) * 5),
+      var(--sunpillar-clr-6) calc(var(--space) * 6),
+      var(--sunpillar-clr-1) calc(var(--space) * 7)
+    ),
+    repeating-linear-gradient(
+      var(--angle),
+      #0e152e 0%,
+      hsl(180, 10%, 60%) 3.8%,
+      hsl(180, 29%, 66%) 4.5%,
+      hsl(180, 10%, 60%) 5.2%,
+      #0e152e 10%,
+      #0e152e 12%
+    ),
+    radial-gradient(
+      farthest-corner circle at var(--pointer-x) var(--pointer-y),
+      hsla(0, 0%, 0%, 0.1) 12%,
+      hsla(0, 0%, 0%, 0.15) 20%,
+      hsla(0, 0%, 0%, 0.25) 120%
+    );
+  background-position:
+    0 var(--background-y),
+    var(--background-x) var(--background-y),
+    center;
+  background-blend-mode: color, hard-light;
+  background-size:
+    500% 500%,
+    300% 300%,
+    200% 200%;
+  background-repeat: repeat;
+}
+
+.pc-shine::before,
+.pc-shine::after {
+  content: "";
+  background-position: center;
+  background-size: cover;
+  grid-area: 1/1;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+
+.pc-card:hover .pc-shine,
+.pc-card.active .pc-shine {
+  filter: brightness(var(--shine-brightness)) contrast(var(--shine-contrast))
+    saturate(var(--shine-saturate)) hue-rotate(var(--shine-hue));
+  animation-play-state: paused;
+}
+
+.pc-card:hover .pc-shine::before,
+.pc-card.active .pc-shine::before,
+.pc-card:hover .pc-shine::after,
+.pc-card.active .pc-shine::after {
+  opacity: 1;
+}
+
+.pc-shine::before {
+  background-image:
+    linear-gradient(
+      45deg,
+      var(--sunpillar-4),
+      var(--sunpillar-5),
+      var(--sunpillar-6),
+      var(--sunpillar-1),
+      var(--sunpillar-2),
+      var(--sunpillar-3)
+    ),
+    radial-gradient(
+      circle at var(--pointer-x) var(--pointer-y),
+      hsl(0, 0%, 70%) 0%,
+      hsla(0, 0%, 30%, 0.2) 90%
+    );
+  background-size:
+    250% 250%,
+    100% 100%;
+  background-position:
+    var(--pointer-x) var(--pointer-y),
+    center;
+  background-blend-mode: color-dodge;
+  filter: brightness(calc(2 - var(--pointer-from-center)))
+    contrast(calc(var(--pointer-from-center) + 2))
+    saturate(calc(0.5 + var(--pointer-from-center)));
+  mix-blend-mode: luminosity;
+}
+
+.pc-shine::after {
+  background-position:
+    0 var(--background-y),
+    calc(var(--background-x) * 0.4) calc(var(--background-y) * 0.5),
+    center;
+  background-size:
+    200% 300%,
+    700% 700%,
+    100% 100%;
+  mix-blend-mode: difference;
+  filter: brightness(0.8) contrast(1.5);
+}
+
+.pc-glare {
+  transform: translate3d(0, 0, 1.1px);
+  overflow: hidden;
+  background-image: radial-gradient(
+    farthest-corner circle at var(--pointer-x) var(--pointer-y),
+    hsl(248, 25%, 80%) 12%,
+    hsla(207, 40%, 30%, 0.8) 90%
+  );
+  mix-blend-mode: overlay;
+  filter: brightness(0.8) contrast(1.2);
+  z-index: 4;
+}
+
+/* ---- children slot: BETWEEN shine (z3, earlier sibling) and glare (z4).
+   Placed after the `.pc-card *` universal rule so its resets win. ---- */
+.pc-content-slot {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  transform: translate3d(0, 0, 1.05px);
+  overflow: hidden;
+}
+
+/* ---- card visual (imageUrl prop): UNDER the hologram — z2 sits below
+   .pc-shine (z3), so the holo lays on top of the artwork; glare (z4) stays
+   above everything as before ---- */
+.pc-visual {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  transform: translate3d(0, 0, 0.9px);
+  overflow: hidden;
+}
+
+.pc-visual img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 1;
+  display: block;
+  border-radius: var(--card-radius);
+}
+
+@keyframes holo-bg {
+  0% {
+    background-position:
+      0 var(--background-y),
+      0 0,
+      center;
+  }
+
+  100% {
+    background-position:
+      0 var(--background-y),
+      90% 90%,
+      center;
+  }
+}
+
+/* mobile: width reduction ONLY — proportions stay plastic */
+@media (max-width: 768px) {
+  .pc-card {
+    width: min(647px, 80vw);
+  }
+}
