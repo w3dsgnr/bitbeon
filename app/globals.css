@@ -3876,12 +3876,17 @@ html:has(.preloader[data-phase="loading"]) {
   }
 
   /* the render leaves its absolute bottom anchor (hover mechanic is off)
-     and flows under the text at full width */
+     and flows under the text at full width. It sits FLUSH on the card's
+     bottom edge: display:block drops the inline baseline gap, and the
+     negative margin cancels the 24px bottom padding so nothing shows
+     beneath the render (overflow:hidden + the 24px radius clip its corners). */
   .card-illo {
     position: static;
+    display: block;
     width: 100%;
     max-height: none;
     margin-top: 18px;
+    margin-bottom: -24px;
   }
 }
 
