@@ -15,11 +15,11 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "BitBeon — One wallet. Every currency. Total freedom.",
+  title: "BitBeon — One app. Every currency. Total freedom.",
   description:
     "Fiat and crypto in one app — move it instantly, spend it anywhere.",
   openGraph: {
-    title: "BitBeon — One wallet. Every currency. Total freedom.",
+    title: "BitBeon — One app. Every currency. Total freedom.",
     description:
       "Fiat and crypto in one app — move it instantly, spend it anywhere.",
     siteName: "BitBeon",
@@ -28,7 +28,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "BitBeon — One wallet. Every currency. Total freedom.",
+    title: "BitBeon — One app. Every currency. Total freedom.",
     description:
       "Fiat and crypto in one app — move it instantly, spend it anywhere.",
   },

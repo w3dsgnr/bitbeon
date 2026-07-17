@@ -1,6 +1,7 @@
 import Hero from "@/components/Hero";
 import Act2 from "@/components/Act2";
 import Act3 from "@/components/Act3";
+import Marketplace from "@/components/Marketplace";
 import Act4 from "@/components/Act4";
 import SiteHeader from "@/components/SiteHeader";
 import CryptoHero from "@/components/CryptoHero";
@@ -12,6 +13,7 @@ import Faq from "@/components/Faq";
 import Footer from "@/components/Footer";
 import CookieConsent from "@/components/CookieConsent";
 import ScrollMemory from "@/components/ScrollMemory";
+import Preloader from "@/components/Preloader";
 
 export default function Home() {
   return (
@@ -29,6 +31,7 @@ export default function Home() {
         <Hero />
         <Act2 />
         <Act3 />
+        <Marketplace />
         <Act4 />
         <CryptoHero />
         <CryptoHighlights />
@@ -38,6 +41,10 @@ export default function Home() {
         <Faq />
       </main>
       <Footer />
+      {/* first-load curtain over the whole page — LAST in tree order so
+          Hero's own frame preloads (layout effect) fire first and the
+          preloader merely observes them (Preloader.tsx) */}
+      <Preloader />
       {/* EU consent banner — fixed overlay above the header; nothing
           non-essential may run before a stored choice (CookieConsent.tsx) */}
       <CookieConsent />

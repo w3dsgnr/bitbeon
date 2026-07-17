@@ -164,26 +164,6 @@ body {
   background: var(--bit-scene);
 }
 
-/* oversized backdrop wordmark behind the intro logo — 200px, fill #fff 16% */
-.hero-intro-wordmark {
-  position: absolute;
-  inset: 0;
-  z-index: 0; /* above the rays canvas (DOM order), below the logo (z 1) */
-  display: grid;
-  place-items: center;
-  margin: 0;
-  font-family: var(--font-display);
-  font-variation-settings: "opsz" 14;
-  font-size: clamp(64px, 13.9vw, 200px); /* 200px at the 1440 design width */
-  font-weight: 700;
-  letter-spacing: var(--display-tracking);
-  line-height: normal;
-  white-space: nowrap;
-  color: rgba(255, 255, 255, 0.16);
-  pointer-events: none;
-  user-select: none;
-}
-
 /* centered intro brand mark — layout centers it (inset + margin auto) so GSAP
    owns the transforms exclusively: cursor parallax on the wrap, float on the img */
 .hero-intro-logo {
@@ -204,6 +184,96 @@ body {
   will-change: transform;
   /* ambient glow matching the rays color (#000DFF) */
   filter: drop-shadow(0 24px 48px rgba(0, 13, 255, 0.35));
+}
+
+/* ---- first-load preloader (components/Preloader.tsx) ----
+   Same dark scene as the intro — it REUSES .hero-intro-logo, so the
+   fade-out lands on a near-identical view of .hero-dark and reads as the
+   rays waking up around a logo that never moved. */
+
+/* scroll locked from the very first paint (pure CSS — works before
+   hydration) and released the moment the overlay starts leaving */
+html:has(.preloader[data-phase="loading"]) {
+  overflow: hidden;
+}
+
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 300; /* above the header (100), consent (120), skip-link (200) */
+  background: var(--bit-scene);
+  transition: opacity 600ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.preloader[data-phase="leaving"] {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* gentle float matching the intro logo's GSAP float (±10px / ±1.2deg,
+   3.4s sine yoyo) — the crossfade reads as a settle, not a jump */
+.preloader__logo {
+  animation: preloader-float 3.4s ease-in-out infinite alternate;
+}
+
+@keyframes preloader-float {
+  from {
+    transform: translateY(-10px) rotate(-1.2deg);
+  }
+  to {
+    transform: translateY(10px) rotate(1.2deg);
+  }
+}
+
+.preloader__meter {
+  position: absolute;
+  left: 50%;
+  bottom: max(48px, 14vh);
+  transform: translateX(-50%);
+  display: grid;
+  gap: 12px;
+  justify-items: center;
+  /* meter leads the exit — gone before the scene crossfade finishes */
+  transition: opacity 250ms ease-out;
+}
+
+.preloader[data-phase="leaving"] .preloader__meter {
+  opacity: 0;
+}
+
+.preloader__track {
+  display: block;
+  width: 148px;
+  height: 2px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.14);
+  overflow: hidden;
+}
+
+.preloader__fill {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: #fff;
+  box-shadow: 0 0 12px rgba(0, 13, 255, 0.6);
+  transform: scaleX(0); /* driven per-frame from Preloader.tsx (lerped) */
+  transform-origin: left;
+}
+
+.preloader__pct {
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  font-variant-numeric: tabular-nums;
+  color: rgba(255, 255, 255, 0.55);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .preloader__logo {
+    animation: none;
+  }
 }
 
 .hero-seq-wrap {
@@ -337,6 +407,7 @@ body {
    share one grey→white gradient (set on .actN-card); ONE navy card per act */
 .act2-grid .card-tr,
 .act3-grid .card-bl,
+.actm-grid .card-tr,
 .act4-grid .card-br {
   background: linear-gradient(180deg, #1c2158 0%, #3c47be 100%);
   color: #f6fcfe;
@@ -344,6 +415,7 @@ body {
 
 .act2-grid .card-tr .bento-card__sub,
 .act3-grid .card-bl .bento-card__sub,
+.actm-grid .card-tr .bento-card__sub,
 .act4-grid .card-br .bento-card__sub {
   color: rgba(246, 252, 254, 0.65);
 }
@@ -627,7 +699,7 @@ body {
 
 /* ---------- ACT 3 — canvas-sequence hero -> bento ----------
    Same skeleton as act 2; the hero is the act-1-finale framed window
-   (60px frame in the section bg + radius 80) scrubbing a frame sequence. */
+   (24px frame in the section bg + radius 40) scrubbing a frame sequence. */
 .act3 {
   position: relative;
   width: 100%;
@@ -699,12 +771,12 @@ body {
 }
 
 /* the act-1 finale look, act-1 mechanics: the container (and canvas) are
-   ALWAYS fullscreen and never transformed — the 60px frame + radius 80 live
+   ALWAYS fullscreen and never transformed — the 24px frame + radius 40 live
    in clip-path, and the shrinking window CROPS the frames, never scales them */
 .act3-window {
   position: absolute;
   inset: 0;
-  clip-path: inset(60px 60px 60px 60px round 80px);
+  clip-path: inset(24px 24px 24px 24px round 40px);
   background: #dcd7f5; /* holds the space until the first frame decodes */
   opacity: 0;
   visibility: hidden;
@@ -841,7 +913,7 @@ body {
    transition (state change, not scrub). */
 .freedom-header {
   position: fixed;
-  top: 84px;
+  top: 32px;
   /* width matches the content grid: same side inset as the sections
      (--frame-b-inset) and the same 1400px cap, centered. Centered via
      left/right + margin auto — NOT translateX: GSAP owns the transform
@@ -1116,6 +1188,118 @@ body {
   }
 }
 
+/* ---------- MARKETPLACE act — vertical phone procession -> bento ----------
+   Between acts 3 and 4. Same skeleton as act 2 (riding headline lines,
+   final bento grid always laid out); the hero is a COLUMN of three
+   marketplace screenshots riding up. Defaults are the PRE-scene hidden
+   state (SSR-safe); GSAP owns the reveal. */
+.actm {
+  /* procession shots ride LARGER than the bento center cell so the last
+     screen visibly SHRINKS when it FLIPs into the grid */
+  --actm-shot-h: min(820px, calc(100svh - 96px));
+  position: relative;
+  width: 100%;
+  height: 100svh; /* small-viewport unit: stable under mobile browser chrome,
+                     and static per-load so ScrollTrigger pins measure once */
+  overflow: hidden;
+  background: var(--act3-bg); /* continues the light bento canvas */
+}
+
+.actm-grid {
+  position: absolute;
+  top: calc(50% - var(--bento-h) / 2);
+  height: var(--bento-h);
+  left: 0;
+  right: 0;
+  margin-inline: auto;
+  width: min(1124px, calc(100% - 72px));
+  display: grid;
+  grid-template-columns: 387fr 310fr 387fr;
+  grid-template-rows: 1fr 1fr;
+  gap: 15px 20px;
+  z-index: 1;
+}
+
+.actm-card {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  overflow: hidden;
+  padding: 32px;
+  border-radius: 30px;
+  background: linear-gradient(180deg, #efefef 0%, #fff 49.84%);
+  color: var(--act2-card-ink);
+  font-family: var(--font-display);
+  font-variation-settings: "opsz" 14;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: normal;
+  line-height: 1.3;
+  opacity: 0;
+  visibility: hidden;
+}
+
+/* ---- hero overlay (above the grid) — the phone procession ---- */
+.actm-hero {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* the column's RESTING layout (transform-free) centers the LAST shot in the
+   viewport — the FLIP measure walks offset* metrics, so the geometry GSAP
+   measures is exactly the geometry the FLIP plays over (track at y:0).
+   Anchored by the BOTTOM edge: last shot is --bento-h tall and viewport-
+   centered, like the act-2 hero shot. */
+.actm-track {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: calc(50% - var(--actm-shot-h) / 2);
+  margin-inline: auto;
+  width: fit-content;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  /* gap large enough that the two spent screens clear the viewport top
+     once the last one is centered: half a viewport minus half a shot, +40 */
+  gap: calc(50svh - var(--actm-shot-h) / 2 + 40px);
+  will-change: transform;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.actm-shot {
+  position: relative;
+  /* matches the Marketplace-*.png native ratio — width derives from height
+     so the phone frame is never cropped by object-fit: cover */
+  height: var(--actm-shot-h);
+  width: auto;
+  aspect-ratio: 804 / 1750;
+  border-radius: 48px;
+  /* NO overflow: hidden — the iPhone-frame outline overhangs the shot by
+     14px; the corner crop lives on the img's own border-radius */
+  background: linear-gradient(165deg, #f6f5ff 0%, #dcd7f5 60%, #c9c2ee 100%);
+  will-change: transform; /* stacking context: keeps .phone-frame's z -1
+                             plate under the img, not the section bg */
+}
+
+.actm-shot img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 48px;
+  display: block;
+  color: transparent; /* mute alt text while the asset is missing */
+}
+
+/* both riding lines pass behind the phone column — text must never cross
+   the iPhone frame outlines (same rule as act 2) */
+.actm .act-title-line--front {
+  z-index: 1;
+}
+
 /* ---------- ACT 4 — "Your wallet in your pocket": holo tilt card -> bento ----------
    Same skeleton as acts 2/3. Defaults are the PRE-scene hidden state
    (SSR-safe); GSAP owns the reveal. The grid is ALWAYS in its final layout —
@@ -1267,10 +1451,11 @@ body {
   object-fit: cover;
 }
 
-/* cloud sprites — positioned per the mock offsets (Figma 78:2425/78:2428:
-   sprites 2048px wide over a 1400px frame, back shifted up, front shifted
-   down) so the copy stays readable between the layers. Oversized beyond the
-   frame, so the ±28px parallax drift never shows an edge. */
+/* cloud sprites — pinned to the frame BOTTOM (sprites 2048px wide over a
+   1400px frame, Figma 78:2425/78:2428) so the cloud line always sits on the
+   lower edge regardless of viewport height; the copy stays readable between
+   the layers. Oversized beyond the frame, so the ±28px parallax drift never
+   shows an edge. */
 .crypto-hero__clouds-back,
 .crypto-hero__clouds-front {
   position: absolute;
@@ -1284,14 +1469,14 @@ body {
 
 .crypto-hero__clouds-back {
   z-index: 1;
-  top: -33%; /* mock: -220 / 661 */
+  bottom: -12px; /* bottom-pinned; bleed > BACK_Y drift (8px) hides the edge */
   aspect-ratio: 2048 / 1117;
   background-image: url("/crypto/clouds-back.png");
 }
 
 .crypto-hero__clouds-front {
   z-index: 3;
-  top: 8%; /* mock: 56 / 661 */
+  bottom: -24px; /* bottom-pinned; bleed > FRONT_Y drift (18px) hides the edge */
   aspect-ratio: 2048 / 1210;
   background-image: url("/crypto/clouds-front.png");
 }
@@ -2933,6 +3118,8 @@ body {
   position: absolute;
   inset: 0;
   overflow: hidden;
+  /* quiet the WebGL texture — content must lead, the pixels are ambience */
+  opacity: 0.4;
 }
 
 .footer__blast > div,
@@ -3521,6 +3708,7 @@ body {
 @media (max-width: 768px) {
   .act2,
   .act3,
+  .actm,
   .act4 {
     height: auto;
     min-height: 0;
@@ -3534,8 +3722,11 @@ body {
   /* SSR-hidden defaults + possible GSAP leftovers -> visible, untransformed */
   .act2 .act2-card,
   .act3 .act3-card,
+  .actm .actm-card,
   .act4 .act4-card,
   .act2-shot,
+  .actm-track,
+  .actm-shot,
   .act3-grid .card-center,
   .act4-grid .card-center,
   .act-title-line,
@@ -3547,12 +3738,14 @@ body {
 
   /* ---- section order: title, screenshot, cards ---- */
   .act2 .act-title-layer,
+  .actm .act-title-layer,
   .act4 .act-title-layer,
   .act3-hero {
     order: -2;
   }
 
-  .act2-hero {
+  .act2-hero,
+  .actm-hero {
     order: -1;
   }
 
@@ -3604,9 +3797,33 @@ body {
     margin-inline: auto;
   }
 
+  /* ---- marketplace: the procession collapses to ONE static phone ---- */
+  .actm-hero {
+    position: static;
+    inset: auto;
+    display: block;
+  }
+
+  .actm-track {
+    position: static;
+    width: auto;
+    display: block;
+  }
+
+  .actm-shot {
+    height: auto;
+    width: min(68%, 260px);
+    margin-inline: auto;
+  }
+
+  .actm-shot + .actm-shot {
+    display: none;
+  }
+
   /* ---- grids become one column: phone first, then cards ---- */
   .act2-grid,
   .act3-grid,
+  .actm-grid,
   .act4-grid {
     position: static;
     top: auto;
@@ -3627,8 +3844,9 @@ body {
     min-height: 0;
   }
 
-  /* act 2's center cell is an empty FLIP anchor — nothing to show */
-  .act2-grid .card-center {
+  /* acts 2/marketplace center cells are empty FLIP anchors — nothing to show */
+  .act2-grid .card-center,
+  .actm-grid .card-center {
     display: none;
   }
 
@@ -3643,6 +3861,7 @@ body {
   /* ---- cards, expanded: title + sub + render in natural flow ---- */
   .act2-card,
   .act3-card,
+  .actm-card,
   .act4-card {
     padding: 24px;
     border-radius: 24px;

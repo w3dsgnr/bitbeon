@@ -34,7 +34,7 @@ import { setHeaderHidden } from "@/lib/headerTheme";
 const PixelBlast = dynamic(() => import("./PixelBlast"), { ssr: false });
 
 /* 1:1 the hero freedom marquee phrases (Figma 78:4852..4854) */
-const PHRASES = ["Every currency.", "Total freedom.", "One wallet."];
+const PHRASES = ["Every currency.", "Total freedom.", "One app."];
 
 const PRODUCT_LINKS: Array<[string, string]> = [
   ["Features", "#features"],
@@ -224,12 +224,12 @@ export default function Footer() {
               pixelSize={4}
               color="#2E5CFF"
               patternScale={2}
-              patternDensity={1}
+              patternDensity={0.85}
               enableRipples
               rippleSpeed={0.3}
               rippleThickness={0.1}
-              rippleIntensityScale={1}
-              speed={0.5}
+              rippleIntensityScale={0.6}
+              speed={0.25}
               transparent
               edgeFade={0.25}
             />

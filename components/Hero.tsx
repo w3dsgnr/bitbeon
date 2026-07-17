@@ -25,14 +25,14 @@ const coinFrameUrl = (i: number) =>
 const PIN_LENGTH = 5000; // total pin scroll distance (px) for the coin section
 const MARQUEE_SPEED = 50; // px/s — phase C loop speed (tuning knob)
 const ENABLE_PHRASE_BLUR = false; // optional blur(8px)->0 on side-phrase reveal
-/* framed-state geometry — ADAPTIVE: the desktop 60px border / 80px radius
+/* framed-state geometry — ADAPTIVE: the desktop 32px border / 64px radius
    scale down with the viewport width (≈16px/28px at 390px), so the framed
    window never looks over-rounded on phones. Function values, re-evaluated
    on every ScrollTrigger refresh (invalidateOnRefresh). */
 const frameInset = () =>
-  Math.round(Math.min(60, Math.max(16, window.innerWidth * 0.042)));
+  Math.round(Math.min(32, Math.max(16, window.innerWidth * 0.042)));
 const frameRadius = () =>
-  Math.round(Math.min(80, Math.max(28, window.innerWidth * 0.056)));
+  Math.round(Math.min(64, Math.max(28, window.innerWidth * 0.056)));
 
 /* the fixed header is driven from TWO scroll ranges (intro + freedom act).
    This flag tells the freedom handoff that the intro currently owns the
@@ -75,6 +75,7 @@ interface SeqActOpts {
   framesRef: RefObject<HTMLImageElement[] | null>;
   urls: (i: number) => string;
   count: number;
+  seqStart: number; // first shown frame index — earlier frames never load
   zone: [number, number];
   end: string;
 }
@@ -91,7 +92,8 @@ function useSequenceAct(o: SeqActOpts) {
         o.framesRef.current = Array.from({ length: o.count }, (_, i) => {
           const img = new Image();
           img.decoding = "async";
-          img.src = o.urls(i);
+          // frames below seqStart are never shown — skip the requests
+          if (i >= o.seqStart) img.src = o.urls(i);
           return img;
         });
       }
@@ -148,7 +150,7 @@ function useSequenceAct(o: SeqActOpts) {
       // reduced-motion: no pin, no scrub — show the final framed composition
       // statically (it covers the canvas, so frame 0 stays as a harmless base)
       if (o.reduced) {
-        draw(0);
+        draw(o.seqStart);
         const stage = o.stageRef.current as HTMLElement;
         const frame = stage.querySelector<HTMLElement>(".freedom-frame");
         if (frame) {
@@ -183,8 +185,13 @@ function useSequenceAct(o: SeqActOpts) {
 
       // ---------- MOTION ----------
       gsap.registerPlugin(ScrollTrigger, SplitText);
-      gsap.set(o.wrapRef.current, { autoAlpha: 0 });
+      // the wrap is visible from load: below the fold until the previous act
+      // releases, the section then slides in already showing the seqStart
+      // frame — the act reads as started during the handoff scroll instead
+      // of arriving as a white screen that only fills once the pin engages
+      gsap.set(o.wrapRef.current, { autoAlpha: 1 });
       gsap.set(o.headlineRef.current, { autoAlpha: 0 });
+      draw(o.seqStart);
 
       let split: SplitText | null = null;
       let tl: gsap.core.Timeline | null = null;
@@ -252,7 +259,7 @@ function useSequenceAct(o: SeqActOpts) {
           }); // hand control back to the scrub state
         };
 
-        // ---- SplitText headline: same params as "One wallet" ----
+        // ---- SplitText headline: same params as "One app" ----
         split = new SplitText(o.headlineRef.current, { type: "chars" });
         const chars = split.chars;
         gsap.set(chars, {
@@ -299,7 +306,7 @@ function useSequenceAct(o: SeqActOpts) {
           });
         };
 
-        const proxy = { f: 0 };
+        const proxy = { f: o.seqStart };
         let headlineShown = false;
         const [Z0, Z1] = o.zone;
 
@@ -377,21 +384,15 @@ function useSequenceAct(o: SeqActOpts) {
         });
         if (tl.scrollTrigger) triggers.push(tl.scrollTrigger);
 
-        tl.fromTo(
-          o.wrapRef.current,
-          { autoAlpha: 0 },
-          { autoAlpha: 1, duration: 0.04 },
+        tl.to(
+          proxy,
+          {
+            f: o.count - 1,
+            duration: SEQ_END,
+            onUpdate: () => draw(proxy.f),
+          },
           0
-        ) // fade the sequence in from the continuing white
-          .to(
-            proxy,
-            {
-              f: o.count - 1,
-              duration: SEQ_END,
-              onUpdate: () => draw(proxy.f),
-            },
-            0
-          ) // scrub the frames (scroll = playhead)
+        ) // scrub the frames (scroll = playhead) — wrap already visible pre-pin
           .to({}, { duration: 0.1 }, REVEAL_END); // dummy: hold duration at 1.0 (phase C is time-based)
 
         if (hasFreedom) {
@@ -862,6 +863,8 @@ export default function Hero() {
     framesRef: coinFramesRef,
     urls: coinFrameUrl,
     count: COIN_FRAMES,
+    seqStart: 6, // frame_0007 — start of the coin entrance
+
     // old zone [0.2, 0.74] remapped onto the new progress scale (frames now
     // end at 0.55) and clipped before the expanding square owns the center
     zone: [0.11, 0.37],
@@ -882,10 +885,6 @@ export default function Hero() {
               mouseInfluence={0}
             />
           )}
-          {/* oversized backdrop wordmark BEHIND the floating logo (static) */}
-          <p className="hero-intro-wordmark" aria-hidden="true">
-            BitBeon Wallet
-          </p>
           {/* centered brand mark — floats in place and follows the cursor;
               lives inside the dark scene, so the opaque logo sequence covers
               it as the narrative starts (no extra scroll wiring needed) */}
@@ -906,7 +905,7 @@ export default function Hero() {
         </div>
 
         <h1 ref={headlineRef} className="hero-headline h0">
-          One wallet
+          One app
         </h1>
 
         <p ref={scrollDownRef} className="scroll-down">
@@ -947,7 +946,7 @@ export default function Hero() {
             <div className="freedom-track">
               <div className="freedom-track-half">
                 <span className="freedom-phrase freedom-phrase--side">
-                  One wallet
+                  One app
                 </span>
                 <span className="freedom-phrase freedom-phrase--side">
                   Every currency
@@ -958,7 +957,7 @@ export default function Hero() {
               </div>
               <div className="freedom-track-half" aria-hidden="true">
                 <span className="freedom-phrase freedom-phrase--side">
-                  One wallet
+                  One app
                 </span>
                 <span className="freedom-phrase freedom-phrase--side">
                   Every currency

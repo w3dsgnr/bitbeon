@@ -1,8 +1,8 @@
 "use client";
 
 /* BitBeon — ACT 3: same choreography as act 2, but the hero is a CANVAS
-   frame-sequence dressed as the act-1 finale — a framed window (60px border
-   in the section bg, radius 80) that scrubs its frames and then FLIPs into
+   frame-sequence dressed as the act-1 finale — a framed window (24px border
+   in the section bg, radius 40) that scrubs its frames and then FLIPs into
    the center bento card.
    Invariants unchanged: ONE LOOP (Lenis -> ticker -> ScrollTrigger), ONE
    timeline on ONE pin, scrub 0.5, ease none, composite-only tweens. The
@@ -19,11 +19,12 @@ const ACT3_PIN_LENGTH = 2500;
 
 /* ---- sequence ---- */
 const ACT3_FRAME_COUNT = 145;
+const ACT3_FRAME_START = 6; // first shown frame — frame_0007 (0-based index)
 const ACT3_FRAME_PATH = (i: number) =>
   `/move-seq/frame_${String(i + 1).padStart(4, "0")}.webp`;
 const PRELOAD_EAGER = 20; // high-priority head start, fired on approach
 const PRELOAD_BATCH = 4; // lazy tail: concurrent loads, in index order
-const SEQ_ZONE = [0.1, 0.55] as const; // progress span the frames scrub over
+const SEQ_ZONE = [0.05, 0.55] as const; // progress span the frames scrub over
 
 /* ---- progress map (same as act 2) ---- */
 const IN_END = 0.15;
@@ -152,7 +153,7 @@ export default function Act3() {
       };
       window.addEventListener("resize", resize);
 
-      let pendingIndex = 0; // what the scroll wants shown right now
+      let pendingIndex = ACT3_FRAME_START; // what the scroll wants shown right now
       const loadFrame = (i: number, eager: boolean) => {
         if (frames[i]) return frames[i]!;
         const img = new Image();
@@ -170,10 +171,13 @@ export default function Act3() {
       const startPreload = () => {
         if (preloadStarted) return;
         preloadStarted = true;
-        for (let i = 0; i < Math.min(PRELOAD_EAGER, ACT3_FRAME_COUNT); i++)
-          loadFrame(i, true);
+        const eagerEnd = Math.min(
+          ACT3_FRAME_START + PRELOAD_EAGER,
+          ACT3_FRAME_COUNT
+        );
+        for (let i = ACT3_FRAME_START; i < eagerEnd; i++) loadFrame(i, true);
         // lazy tail in index order, small concurrent window
-        let next = PRELOAD_EAGER;
+        let next = eagerEnd;
         const pump = () => {
           if (next >= ACT3_FRAME_COUNT) return;
           const img = loadFrame(next++, false);
@@ -192,7 +196,11 @@ export default function Act3() {
         return Math.max(0, Math.min(1, t));
       };
       const onUpdate = (self: ScrollTrigger) => {
-        const index = Math.round(mapRange(self.progress) * (ACT3_FRAME_COUNT - 1));
+        const index =
+          ACT3_FRAME_START +
+          Math.round(
+            mapRange(self.progress) * (ACT3_FRAME_COUNT - 1 - ACT3_FRAME_START)
+          );
         pendingIndex = index;
         if (index !== current) draw(index);
       };
@@ -213,11 +221,11 @@ export default function Act3() {
          and never transformed — the frames keep their scale, the shrinking
          clip-path window CROPS them.
          CRITICAL: from/to must carry the SAME component count. The computed
-         style collapses the CSS default to `inset(60px round 80px)` (2
+         style collapses the CSS default to `inset(24px round 40px)` (2
          numbers) while the target has 5 — GSAP pairs numbers in order and
          SNAPS the unmatched ones at tween start (the bottom-edge jump seen
          around frame 50). So the from-value is spelled out explicitly. */
-      const CLIP_START = "inset(60px 60px 60px 60px round 80px)";
+      const CLIP_START = "inset(24px 24px 24px 24px round 40px)";
       const clipToCard = () => {
         const c = centerOf(cardCenter);
         const top = c.y - cardCenter.offsetHeight / 2;
