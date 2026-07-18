@@ -11,8 +11,8 @@ export const cookiePolicy: LegalDoc = {
     "We only store or read non-essential cookies and similar technologies on your device after you give consent. Strictly necessary cookies are used without consent because they are required to deliver the Service you request.",
     "Consent is requested through a cookie banner before any non-essential cookies are set. Rejecting is as easy as accepting, no option is pre-selected, and we do not use \"cookie walls\".",
     "You can change or withdraw your consent at any time via \"Cookie settings\", with effect for the future and as easily as you gave it.",
-    "This policy reflects EU rules: Article 5(3) of the ePrivacy Directive 2002/58/EC (as implemented in Poland by the Telecommunications Law) and the GDPR (Regulation (EU) 2016/679).",
-    "The data controller is LUNTRA sp. z o.o. (see the Imprint and the Privacy Policy).",
+    "This policy reflects EU rules: Article 5(3) of the ePrivacy Directive 2002/58/EC (as implemented in Slovakia by Act No. 452/2021 Coll. on Electronic Communications) and the GDPR (Regulation (EU) 2016/679).",
+    "The data controller is LAND GROUP s.r.o. (see the Imprint and the Privacy Policy).",
   ],
   sections: [
     {
@@ -21,7 +21,7 @@ export const cookiePolicy: LegalDoc = {
       blocks: [
         {
           t: "p",
-          text: "Cookies and similar technologies on the Service are used by LUNTRA sp. z o.o., ul. Romana Dmowskiego 3/9, 50-203 Wrocław, Poland (KRS: 0001143324, NIP: 8982315211), operating the \"BitBeon\" brand (the \"Operator\"). For matters concerning the processing of personal data collected through cookies, you may contact us via the in-app chat, the contact / support options in the Service, or by post at the address above. Full details are in the Imprint / Legal Information.",
+          text: "Cookies and similar technologies on the Service are used by LAND GROUP s.r.o., Račianska 66, 831 02 Bratislava – mestská časť Nové Mesto, Slovakia (IČO: 35 821 540), operating the \"BitBeon\" brand (the \"Operator\"). For matters concerning the processing of personal data collected through cookies, you may contact us via the in-app chat, the contact / support options in the Service, or by post at the address above. Full details are in the Imprint / Legal Information.",
         },
       ],
     },
@@ -171,7 +171,7 @@ export const cookiePolicy: LegalDoc = {
       blocks: [
         {
           t: "p",
-          text: "To the extent cookies process your personal data, you have the rights described in the Privacy Policy, including access, rectification, erasure, restriction, portability, objection, and withdrawal of consent. You also have the right to lodge a complaint with a supervisory authority. The competent authority for the Operator is the President of the Personal Data Protection Office (Prezes Urzędu Ochrony Danych Osobowych — UODO), ul. Stawki 2, 00-193 Warsaw, Poland; you may also complain to the authority in your EU country of residence.",
+          text: "To the extent cookies process your personal data, you have the rights described in the Privacy Policy, including access, rectification, erasure, restriction, portability, objection, and withdrawal of consent. You also have the right to lodge a complaint with a supervisory authority. The competent authority for the Operator is the Office for Personal Data Protection of the Slovak Republic (Úrad na ochranu osobných údajov Slovenskej republiky), Hraničná 12, 820 07 Bratislava, Slovakia; you may also complain to the authority in your EU country of residence.",
         },
       ],
     },
@@ -201,7 +201,7 @@ export const cookiePolicy: LegalDoc = {
       blocks: [
         {
           t: "p",
-          text: "Questions about this Policy or our use of cookies can be directed to LUNTRA sp. z o.o. using the details in the Imprint / Legal Information or via the Service's support options.",
+          text: "Questions about this Policy or our use of cookies can be directed to LAND GROUP s.r.o. using the details in the Imprint / Legal Information or via the Service's support options.",
         },
       ],
     },

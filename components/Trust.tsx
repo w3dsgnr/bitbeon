@@ -10,8 +10,8 @@
    card's visual animates that meaning:
    1. black  — end-to-end-encryption toggle (padlock closes as it flips on)
       → "Bulletproof — Security & encryption";
-   2. map    — license panel (LUNTRA / RDWW-1771 per TBD-1) over the Warsaw
-      map with a soft location ping → "Licensed — Regulated & compliant";
+   2. map    — compliance panel (LAND GROUP s.r.o., Bratislava) over the
+      abstract city map with a soft location ping → "Licensed — Regulated & compliant";
    3. purple — looping toast stack of payments across the globe (per-toast
       currency badge) → "100+ — Countries available".
    Visuals are mock-UI drawn in CSS/SVG, no assets. Loops are pure CSS,
@@ -79,10 +79,11 @@ const ROW_ICONS = {
   ),
 } as const;
 
-/* license facts — entity/registry per bitbeon-copy.md TBD-1 (kept as-is) */
+/* trust facts — operator LAND GROUP s.r.o. (Slovak Commercial Register);
+   no specific VASP licence number is asserted here */
 const LICENSE_ROWS = [
-  { icon: "shield", text: "Licensed virtual currency business" },
-  { icon: "doc", text: "Registry no. RDWW-1771" },
+  { icon: "shield", text: "Virtual currency services provider" },
+  { icon: "doc", text: "AML/CFT compliant" },
   { icon: "card", text: "PCI DSS compliant" },
   { icon: "search", text: "Independent audits" },
 ] as const;
@@ -246,7 +247,7 @@ export default function Trust() {
             </figcaption>
           </figure>
 
-          {/* 2 — Licensed: license panel over the Warsaw map, soft HQ ping */}
+          {/* 2 — Licensed: compliance panel over the city map, soft HQ ping */}
           <figure className="trust__card">
             <div className="trust__tile">
               <div

@@ -51,9 +51,8 @@ const QA = [
     a: "Transfers between BitBeon users are free. For external transfers (SEPA, SWIFT) and crypto transactions, standard network or processing fees may apply. Card issuance: virtual from €9, plastic from €14. See the Plans section in the app for current pricing.",
   },
   {
-    // [TBD: юрлицо] — entity name pending (bitbeon-copy.md)
     q: "How do I contact support?",
-    a: "In-app support is available 24/7 via the chat button. You can also reach us through the Support page on our website. For regulatory or compliance inquiries, contact LUNTRA sp. z o.o. directly.",
+    a: "In-app support is available 24/7 via the chat button. You can also reach us through the Support page on our website. For regulatory or compliance inquiries, contact LAND GROUP s.r.o. directly.",
   },
 ] as const;
 

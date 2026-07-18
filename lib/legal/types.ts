@@ -1,5 +1,6 @@
 /* Shared shape for the five legal documents (content: meinbit-legal-content.md,
-   rebranded MeinBit → BitBeon; LUNTRA registry details verbatim).
+   rebranded MeinBit → BitBeon; operator LAND GROUP s.r.o., registry details
+   from the Slovak Commercial Register).
 
    Section numbers come from the SOURCE documents (`n`), not a CSS counter —
    legal text cross-references them ("see Section 14.1"), so renumbering on

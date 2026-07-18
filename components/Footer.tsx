@@ -17,9 +17,9 @@
    recolored to the brand blue-azure per the redesign. Lazily mounted near
    the viewport; autoPauseOffscreen halts it when scrolled away.
 
-   Copy: columns/copyright 1:1 from bitbeon-copy.md → Footer. The Wrocław
-   address, tagline and legal/disclaimer paragraphs are NOT in the copy doc
-   yet ([TBD: юрлицо]) — placeholders below, marked TODO copy. CTA buttons
+   Copy: columns/copyright 1:1 from bitbeon-copy.md → Footer. The operator
+   address and legal/disclaimer paragraphs carry LAND GROUP s.r.o. details
+   (Slovak Commercial Register). CTA buttons
    (Get started / Contact support) were dropped from the footer by owner
    decision — the same links live in the Product column and the header. */
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
@@ -278,31 +278,29 @@ export default function Footer() {
         </div>
 
         {/* small legal print above the bottom bar — owner-approved disclaimer
-            (source: meinbit.io footer, brand adapted to BitBeon; LUNTRA
-            registry details verbatim) */}
+            (source: meinbit.io footer, brand adapted to BitBeon; LAND GROUP
+            s.r.o. registry details verbatim from the Slovak Commercial
+            Register) */}
         <div className="footer__legal-text">
           <p>
-            The BitBeon platform is operated by LUNTRA Sp. z o.o. If you have
+            The BitBeon platform is operated by LAND GROUP s.r.o. If you have
             any questions about the services we provide, please contact us via
             the in-app chat or through our other contact channels.
           </p>
           <p>
-            LUNTRA Spółka z ograniczoną odpowiedzialnością is a company
-            incorporated under the laws of the Republic of Poland, registered
-            in the National Court Register (Krajowy Rejestr Sądowy) under KRS
-            No. 0001143324. NIP (Tax ID): 8982315211. REGON: 540382294.
-            Registered office: ul. Romana Dmowskiego 3/9, 50-203 Wrocław,
-            Poland. Share capital: PLN 5,000.00 (fully paid up).
+            LAND GROUP spoločnosť s ručením obmedzeným is a company
+            incorporated under the laws of the Slovak Republic, registered in
+            the Commercial Register of the City Court Bratislava III, Section
+            Sro, Insert No. 25046/B. IČO (Company ID): 35 821 540. Registered
+            office: Račianska 66, 831 02 Bratislava – mestská časť Nové Mesto,
+            Slovakia. Share capital: EUR 13,279 (fully paid up).
           </p>
           <p>
-            LUNTRA Sp. z o.o. is entered in the Register of Virtual Currency
-            Activities (Rejestr Działalności w Zakresie Walut Wirtualnych)
-            maintained by the Director of the Tax Administration Chamber in
-            Katowice (Dyrektor Izby Administracji Skarbowej w Katowicach)
-            under registration No. RDWW-1771, with effect from 18 December
-            2024. The Company provides virtual currency services in accordance
-            with the Polish Act of 1 March 2018 on Counteracting Money
-            Laundering and Terrorist Financing.
+            LAND GROUP s.r.o. provides virtual currency services and applies
+            anti-money-laundering and counter-terrorist-financing measures in
+            accordance with Act No. 297/2008 Coll. on the Prevention of Money
+            Laundering and Terrorist Financing and directly applicable EU
+            AML/CFT rules.
           </p>
           <p>
             Virtual currencies are not legal tender and are not guaranteed by
@@ -315,7 +313,7 @@ export default function Footer() {
 
         {/* bottom bar: copyright left, quick legal links right */}
         <div className="footer__bottom">
-          <span className="footer__copyright">© LUNTRA Sp. z o.o. 2026</span>
+          <span className="footer__copyright">© LAND GROUP s.r.o. 2026</span>
           <div className="footer__legal-chips">
             <Link href="/cookie-policy">Cookies policy</Link>
             <Link href="/privacy-policy">Privacy policy</Link>

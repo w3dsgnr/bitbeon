@@ -5,7 +5,7 @@ export const termsOfService: LegalDoc = {
   title: "Terms of Use",
   metaTitle: "Terms of Use — BitBeon",
   metaDescription:
-    "The contract governing your use of the BitBeon service operated by LUNTRA sp. z o.o.: eligibility, KYC/AML, fees, risks, liability, and governing law.",
+    "The contract governing your use of the BitBeon service operated by LAND GROUP s.r.o.: eligibility, KYC/AML, fees, risks, liability, and governing law.",
   updated: "5 Jun 2026",
   summary: [
     "Contract between user and the Operator running the \"BitBeon\" brand service.",
@@ -14,7 +14,7 @@ export const termsOfService: LegalDoc = {
     "Users responsible for account security and legal compliance including taxes.",
     "Service may be suspended or terminated for legal, regulatory, or compliance reasons.",
     "Liability limited to maximum extent permitted by law.",
-    "Governed by Polish law with mandatory EU consumer protections where applicable.",
+    "Governed by Slovak law with mandatory EU consumer protections where applicable.",
   ],
   sections: [
     {
@@ -29,13 +29,13 @@ export const termsOfService: LegalDoc = {
               "Service:",
               "Digital asset services under the \"BitBeon\" brand across websites, apps, and integrated platforms.",
             ],
-            ["Operator:", "Polish legal entity providing the Service."],
+            ["Operator:", "Slovak legal entity providing the Service."],
             ["User / you:", "Natural person or legal entity accessing the Service."],
             ["Account:", "Registered user account within the Service."],
             ["Digital Assets:", "Virtual currencies, tokens, or digital value representations."],
             ["Fiat Currency:", "Legal tender from sovereign states or monetary authorities."],
             ["Integrated Application:", "Third-party services where Service is embedded."],
-            ["Applicable Law:", "All relevant laws including Polish law and EU regulations."],
+            ["Applicable Law:", "All relevant laws including Slovak law and EU regulations."],
           ],
         },
         { t: "p", text: "1.2 \"We / us / our\" refers to Operator; \"you / your\" refers to User." },
@@ -460,7 +460,7 @@ export const termsOfService: LegalDoc = {
       blocks: [
         {
           t: "p",
-          text: "17.1 Terms are governed by Polish law without conflict-of-laws regard, subject to Section 17.2.",
+          text: "17.1 Terms are governed by the law of the Slovak Republic without conflict-of-laws regard, subject to Section 17.2.",
         },
         {
           t: "p",
@@ -468,7 +468,7 @@ export const termsOfService: LegalDoc = {
         },
         {
           t: "p",
-          text: "17.3 Polish courts have non-exclusive jurisdiction; consumer residents may bring proceedings in residence country courts where required.",
+          text: "17.3 Slovak courts have non-exclusive jurisdiction; consumer residents may bring proceedings in residence country courts where required.",
         },
         {
           t: "p",
@@ -503,31 +503,28 @@ export const termsOfService: LegalDoc = {
       blocks: [
         {
           t: "p",
-          text: "**Company:** LUNTRA sp. z o.o. (limited liability company registered in Poland)",
+          text: "**Company:** LAND GROUP s.r.o. (limited liability company registered in the Slovak Republic)",
         },
         {
           t: "ul",
           items: [
-            "KRS: 0001143324 (District Court for Wrocław-Fabryczna in Wrocław, 6th Commercial Division of the National Court Register)",
-            "NIP: 8982315211",
-            "REGON: 540382294",
-            "Registered Office: ul. Romana Dmowskiego 3/9, 50-203 Wrocław, Poland",
-            "Share capital: PLN 5,000.00, fully paid in",
-            "RDWW Registration Number: RDWW-1771 (Register of Virtual Currency Activities)",
-            "RDWW Registration Date: 18 December 2024",
+            "IČO (Company identification number): 35 821 540",
+            "Registration: Commercial Register of the City Court Bratislava III, Section Sro, Insert No. 25046/B",
+            "Registered Office: Račianska 66, 831 02 Bratislava – mestská časť Nové Mesto, Slovakia",
+            "Share capital: EUR 13,279, fully paid up",
           ],
         },
-        { t: "h3", text: "Authorised activities" },
+        { t: "h3", text: "Activities" },
         {
           t: "ul",
           items: [
             "Exchange between virtual currencies and fiat currencies",
             "Exchange between virtual currencies",
             "Intermediation in such exchanges",
-            "Maintenance of accounts for virtual currencies per Polish law",
+            "Maintenance of accounts for virtual currencies",
           ],
         },
-        { t: "p", text: "© LUNTRA sp. z o.o. All rights reserved." },
+        { t: "p", text: "© LAND GROUP s.r.o. All rights reserved." },
       ],
     },
   ],

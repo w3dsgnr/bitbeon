@@ -5,7 +5,7 @@ export const privacyPolicy: LegalDoc = {
   title: "Privacy Policy",
   metaTitle: "Privacy Policy — BitBeon",
   metaDescription:
-    "How LUNTRA sp. z o.o. processes personal data in connection with the BitBeon service: purposes, legal bases, recipients, retention, and your GDPR rights.",
+    "How LAND GROUP s.r.o. processes personal data in connection with the BitBeon service: purposes, legal bases, recipients, retention, and your GDPR rights.",
   updated: "5 Jun 2026",
   summary: [
     "The Operator running the Service controls personal data; legal details appear in Imprint / Legal Information.",
@@ -29,9 +29,9 @@ export const privacyPolicy: LegalDoc = {
         {
           t: "address",
           lines: [
-            "LUNTRA sp. z o.o.",
-            "ul. Romana Dmowskiego 3/9, 50-203 Wrocław, Poland",
-            "KRS: 0001143324 · NIP: 8982315211 · REGON: 540382294",
+            "LAND GROUP s.r.o.",
+            "Račianska 66, 831 02 Bratislava – mestská časť Nové Mesto, Slovakia",
+            "IČO: 35 821 540 · Commercial Register of the City Court Bratislava III, Section Sro, Insert No. 25046/B",
           ],
         },
         {
@@ -386,8 +386,8 @@ export const privacyPolicy: LegalDoc = {
         {
           t: "address",
           lines: [
-            "President of the Personal Data Protection Office (Prezes Urzędu Ochrony Danych Osobowych)",
-            "ul. Stawki 2, 00-193 Warsaw, Poland",
+            "Úrad na ochranu osobných údajov Slovenskej republiky (Office for Personal Data Protection of the Slovak Republic)",
+            "Hraničná 12, 820 07 Bratislava, Slovakia",
           ],
         },
         {

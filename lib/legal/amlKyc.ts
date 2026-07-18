@@ -31,15 +31,15 @@ export const amlKycPolicy: LegalDoc = {
     },
     {
       n: "2",
-      heading: "Legal framework and status as obliged institution",
+      heading: "Legal framework and status as obliged entity",
       blocks: [
         {
           t: "p",
-          text: "The Service is operated by LUNTRA sp. z o.o. (KRS: 0001143324, NIP: 8982315211), entered in the Polish Register of Virtual Currency Activities (Rejestr Działalności w Zakresie Walut Wirtualnych) under number RDWW-1771, maintained by the Director of the Tax Administration Chamber in Katowice (entry effective 18 December 2024).",
+          text: "The Service is operated by LAND GROUP s.r.o. (IČO: 35 821 540), a limited liability company registered in the Commercial Register of the City Court Bratislava III (Section Sro, Insert No. 25046/B), with its registered office in Bratislava, Slovakia.",
         },
         {
           t: "p",
-          text: "The Operator qualifies as an obliged institution under the Polish Act of 1 March 2018 on Counteracting Money Laundering and Terrorist Financing and related EU AML/CFT requirements. Obliged institutions must conduct due diligence, monitor transactions, maintain records, and report suspicious activity. This Policy summarises high-level requirements without replacing detailed internal procedures.",
+          text: "The Operator qualifies as an obliged entity under Act No. 297/2008 Coll. on the Prevention of Money Laundering and Terrorist Financing and related EU AML/CFT requirements. Obliged entities must conduct due diligence, monitor transactions, maintain records, and report suspicious activity. This Policy summarises high-level requirements without replacing detailed internal procedures.",
         },
       ],
     },
