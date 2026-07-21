@@ -31,7 +31,7 @@ const IN_END = 0.15;
 const MOVE_START = 0.25;
 const MOVE_END = 0.7;
 const SHOT_FADE = [0.5, 0.7] as const;
-const BORDER_IN = [0.55, 0.75] as const; // center phone (/Send.png) reveals
+const BORDER_IN = [0.55, 0.75] as const; // center phone (/Send.webp) reveals
 const CARDS_START = 0.6;
 const CARD_STAGGER = 0.05;
 const CARD_DUR = 0.15;
@@ -51,25 +51,25 @@ const CARDS: {
     cls: "card-tl",
     text: "One tap between accounts and currencies.",
     sub: "Your balances live side by side — moving between them is instant and free.",
-    illoSrc: "/cards/act3-one-tap.png",
+    illoSrc: "/cards/act3-one-tap.webp",
   },
   {
     cls: "card-bl",
     text: "Send in seconds — SEPA, SWIFT or on-chain",
     sub: "Pick the rail, we handle the routing — most transfers arrive in minutes, not days.",
-    illoSrc: "/cards/act3-send-seconds.png",
+    illoSrc: "/cards/act3-send-seconds.webp",
   },
   {
     cls: "card-tr",
     text: "Rates locked before you confirm",
     sub: "The quote you approve is exactly what you pay — no drift between confirm and settle.",
-    illoSrc: "/cards/act3-rates-locked.png",
+    illoSrc: "/cards/act3-rates-locked.webp",
   },
   {
     cls: "card-br",
     text: "Every transfer tracked, end to end",
     sub: "Follow each payment from sent to received, with a status update at every step.",
-    illoSrc: "/cards/act3-transfer-tracked.png",
+    illoSrc: "/cards/act3-transfer-tracked.webp",
   },
 ];
 
@@ -414,7 +414,7 @@ export default function Act3() {
           {/* phone screenshot — revealed as the canvas window dissolves;
               the headline lands over its scan area */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="center-shot" src="/Send.png" alt="" />
+          <img className="center-shot" src="/Send.webp" alt="" />
           {/* iPhone contour outline — reveals with the cell */}
           <PhoneFrame radius={38} />
           <div className="act3-title-final-slot" aria-hidden="true" />

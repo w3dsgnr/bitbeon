@@ -30,10 +30,11 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 const HERO_FRAMES = 122;
 const COIN_FRAMES = 169;
-/* weights ≈ relative kilobytes — keeps the bar honest about real progress */
-const HERO_W = 85;
-const COIN_W = 61;
-const LOGO_W = 150;
+/* weights ≈ relative kilobytes — keeps the bar honest about real progress
+   (re-measured 2026-07-21 after the q70 webp recompress of both sequences) */
+const HERO_W = 30;
+const COIN_W = 26;
+const LOGO_W = 30;
 const FONTS_W = 250;
 
 const MIN_SHOW_MS = 1100; // brand moment; also covers instant cache-hit loads
@@ -102,7 +103,7 @@ export default function Preloader() {
       if (alive) loaded += FONTS_W;
     });
 
-    track("/meinbit-logo.png", LOGO_W);
+    track("/meinbit-logo.webp", LOGO_W);
     if (reduced) {
       /* static page — only the first frame of each canvas is ever shown */
       track(`/hero-logo-seq/frame_0001.webp`, HERO_W);
@@ -186,7 +187,7 @@ export default function Preloader() {
           is pixel-identical by construction */}
       <div className="hero-intro-logo preloader__logo">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/meinbit-logo.png" alt="" draggable={false} />
+        <img src="/meinbit-logo.webp" alt="" draggable={false} />
       </div>
       <div className="preloader__meter" aria-hidden="true">
         <span className="preloader__track">

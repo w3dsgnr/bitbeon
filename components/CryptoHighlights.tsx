@@ -76,7 +76,7 @@ export default function CryptoHighlights() {
       <div className="crypto-hl__row">
         <div className="crypto-hl__card">
           <img
-            src="/low-fees.png"
+            src="/low-fees.webp"
             alt="A price tag shaped like a bank card reading “Low Fees” — no ATM, overdraft, hidden or monthly fees"
             loading="lazy"
             decoding="async"
@@ -102,7 +102,7 @@ export default function CryptoHighlights() {
         </div>
         <div className="crypto-hl__card">
           <img
-            src="/No-separate.png"
+            src="/No-separate.webp"
             alt="BitBeon app screen showing fiat and crypto balances side by side"
             loading="lazy"
             decoding="async"

@@ -272,7 +272,7 @@ export default function Act2() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               className="card-illo"
-              src="/cards/act2-fiat-crypto.png"
+              src="/cards/act2-fiat-crypto.webp"
               alt=""
               aria-hidden="true"
             />
@@ -288,7 +288,7 @@ export default function Act2() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               className="card-illo"
-              src="/cards/act2-destinations.png"
+              src="/cards/act2-destinations.webp"
               alt=""
               aria-hidden="true"
             />
@@ -308,7 +308,7 @@ export default function Act2() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               className="card-illo"
-              src="/cards/act2-crypto-fiat.png"
+              src="/cards/act2-crypto-fiat.webp"
               alt=""
               aria-hidden="true"
             />
@@ -324,7 +324,7 @@ export default function Act2() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               className="card-illo"
-              src="/cards/act2-iban.png"
+              src="/cards/act2-iban.webp"
               alt=""
               aria-hidden="true"
             />
@@ -337,7 +337,7 @@ export default function Act2() {
       <div className="act2-hero" aria-hidden="false">
         <div className="act2-shot">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/main.png" alt="BitBeon app — home screen" />
+          <img src="/main.webp" alt="BitBeon app — home screen" />
           {/* iPhone contour outline — rides the FLIP with the shot */}
           <PhoneFrame radius={48} />
         </div>

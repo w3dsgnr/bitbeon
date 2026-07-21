@@ -38,9 +38,9 @@ const CARD_DUR = 0.13; // last card: 0.72 + 3*0.05 + 0.13 = 1.0
 const TITLE_LINES = ["Sell local", "earn eurozone-wide"] as const;
 
 const SHOTS = [
-  "/Marketplace-1.png",
-  "/Marketplace-2.png",
-  "/Marketplace-3.png",
+  "/Marketplace-1.webp",
+  "/Marketplace-2.webp",
+  "/Marketplace-3.webp",
 ] as const;
 
 /* card copy: the marketplace pitch — Slovak producers reach the whole
@@ -55,25 +55,25 @@ const CARDS: {
     cls: "card-tl",
     text: "Your storefront in every eurozone country",
     sub: "List a product once and it's on sale from Bratislava to Lisbon — no extra setup per market.",
-    illoSrc: "/cards/act3-one-tap.png",
+    illoSrc: "/cards/act3-one-tap.webp",
   },
   {
     cls: "card-bl",
     text: "Sales land straight in your balance",
     sub: "Buyers pay in euros and the money settles into your BitBeon account instantly, ready to spend.",
-    illoSrc: "/cards/act3-send-seconds.png",
+    illoSrc: "/cards/act3-send-seconds.webp",
   },
   {
     cls: "card-tr",
     text: "Built for Slovak makers",
     sub: "Local producers get the reach of a continental marketplace — your craft travels, you stay home.",
-    illoSrc: "/cards/act3-rates-locked.png",
+    illoSrc: "/cards/act3-rates-locked.webp",
   },
   {
     cls: "card-br",
     text: "Every order tracked, from cart to payout",
     sub: "Follow each sale from checkout to settlement in the same app that holds your money.",
-    illoSrc: "/cards/act3-transfer-tracked.png",
+    illoSrc: "/cards/act3-transfer-tracked.webp",
   },
 ];
 

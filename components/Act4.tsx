@@ -25,7 +25,7 @@ const ACT4_PIN_LENGTH = 3000; // pin scroll budget (tuning)
 const IN_END = 0.15;
 const MOVE_START = 0.5; // also the tilt hand-off point (one-shot guard)
 const MOVE_END = 0.85;
-const BORDER_IN = [0.65, 0.82] as const; // center phone (/Card details.png)
+const BORDER_IN = [0.65, 0.82] as const; // center phone (/Card details.webp)
 const CARDS_START = 0.7;
 const CARD_STAGGER = 0.04;
 const CARD_DUR = 0.13; // last card: 0.7 + 3*0.04 + 0.13 = 0.95
@@ -52,25 +52,25 @@ const CARDS: {
     cls: "card-tl",
     text: "Virtual card instantly — plastic to your door",
     sub: "Start paying online the moment you're approved; the physical card follows by post.",
-    illoSrc: "/cards/act4-virtual-card.png",
+    illoSrc: "/cards/act4-virtual-card.webp",
   },
   {
     cls: "card-bl",
     text: "Freeze and unfreeze in one tap",
     sub: "Misplaced your card? Pause it instantly and pick up right where you left off.",
-    illoSrc: "/cards/act4-freeze.png",
+    illoSrc: "/cards/act4-freeze.webp",
   },
   {
     cls: "card-tr",
     text: "Pay with fiat or crypto — converted as you go",
     sub: "Set your spending priority once — the app converts at the live rate as you pay.",
-    illoSrc: "/cards/act4-pay-convert.png",
+    illoSrc: "/cards/act4-pay-convert.webp",
   },
   {
     cls: "card-br",
     text: "Apple Pay and Google Pay, ready to tap",
     sub: "Add the card to your phone's wallet and pay contactless from day one.",
-    illoSrc: "/cards/act4-apple-google.png",
+    illoSrc: "/cards/act4-apple-google.webp",
   },
 ];
 
@@ -384,7 +384,7 @@ export default function Act4() {
           {/* phone screenshot — revealed under the incoming holo card,
               which lands on it as the in-app card (260x164 @ 115px) */}
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="center-shot" src="/Card details.png" alt="" />
+          <img className="center-shot" src="/Card details.webp" alt="" />
           {/* iPhone contour outline — reveals with the cell */}
           <PhoneFrame radius={38} />
         </div>
@@ -400,8 +400,8 @@ export default function Act4() {
           <BitCard
             behindGlowColor="rgba(0, 13, 255, 0.35)"
             enableTilt={tiltEnabled}
-            imageUrl="/Bank card.png"
-            iconUrl="/Frame 2043684588.png"
+            imageUrl="/Bank card.webp"
+            iconUrl="/Frame 2043684588.webp"
           />
         </div>
       </div>

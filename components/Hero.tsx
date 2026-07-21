@@ -892,7 +892,7 @@ export default function Hero() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               ref={introLogoImgRef}
-              src="/meinbit-logo.png"
+              src="/meinbit-logo.webp"
               alt="BitBeon logo"
               draggable={false}
             />
@@ -939,7 +939,7 @@ export default function Hero() {
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               className="freedom-img"
-              src="/freedom/image-531.png"
+              src="/freedom/image-531.webp"
               alt="BitBeon app on a phone standing in a flower meadow"
             />
             {/* marquee track: two identical halves -> xPercent -50 loops seamlessly */}

@@ -131,7 +131,7 @@ export default function CryptoHero() {
         {/* sky photo — full-bleed base (Figma "image 531") */}
         <img
           className="crypto-hero__bg"
-          src="/crypto/sky.png"
+          src="/crypto/sky.webp"
           alt=""
           loading="lazy"
           decoding="async"
